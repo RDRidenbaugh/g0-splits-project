@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import statistics
 import sys
 from pathlib import Path
@@ -49,6 +50,9 @@ def main():
     loader = DataLoader(ds, batch_size=args.batch_size, shuffle=False, num_workers=0)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if device.type == "cpu":
+        n_threads = int(os.environ.get("SLURM_CPUS_PER_TASK", os.environ.get("OMP_NUM_THREADS", os.cpu_count() or 1)))
+        torch.set_num_threads(n_threads)
     model = HeatmapNet(EXPECTED_N[args.angle], pretrained=False).to(device)
     model.load_state_dict(torch.load(args.checkpoint, map_location=device))
     model.eval()
