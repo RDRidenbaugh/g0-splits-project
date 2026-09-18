@@ -1,1 +1,6 @@
 scripts/.Rhistory
+.Rhistory
+.venv/
+__pycache__/
+*.pyc
+lance_landmarking/model/runs/

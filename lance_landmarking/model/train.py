@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import time
 from pathlib import Path
 
@@ -92,6 +93,13 @@ def main():
     val_loader = DataLoader(val_ds, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if device.type == "cpu":
+        # belt-and-suspenders: OMP_NUM_THREADS isn't always picked up
+        # depending on how this torch build was compiled, and SLURM's
+        # cgroup-restricted core count can differ from os.cpu_count()
+        n_threads = int(os.environ.get("SLURM_CPUS_PER_TASK", os.environ.get("OMP_NUM_THREADS", os.cpu_count() or 1)))
+        torch.set_num_threads(n_threads)
+        print(f"CPU training: torch.set_num_threads({n_threads})")
     model = HeatmapNet(EXPECTED_N[args.angle], pretrained=not args.no_pretrained).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
 

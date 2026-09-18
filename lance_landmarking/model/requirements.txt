@@ -1,0 +1,10 @@
+# Exact versions validated locally (2026-09-18). MCC has no GPUs, so
+# torch/torchvision are the same CPU build used in local dev and on the
+# cluster -- no CUDA index needed (see setup_env.sh).
+torch==2.14.0
+torchvision==0.29.0
+numpy==2.5.2
+pillow==12.3.0
+tifffile==2026.9.15
+imagecodecs==2026.8.16   # required at runtime by tifffile to decode the LZW-compressed raw TIFFs -- silent hard failure without it
+matplotlib==3.11.2
