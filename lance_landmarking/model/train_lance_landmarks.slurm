@@ -30,27 +30,53 @@
 
 #SBATCH --job-name=lance-landmark
 #SBATCH --array=0-2
-#SBATCH --partition=normal            # MCC's documented partitions are "normal" and "jumbo" (jumbo = the 2 large-memory/4TB nodes -- not needed here)
-#SBATCH --account=YOUR_ACCOUNT        # EDIT: required by MCC (-A); your project/allocation code
+#SBATCH --partition=short            # MCC's documented partitions are "normal" and "jumbo" (jumbo = the 2 large-memory/4TB nodes -- not needed here)
+#SBATCH --account=coa_cli242_uksr     # EDIT: required by MCC (-A); your project/allocation code
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=32            # out of 128/node -- raise if you have the node to yourself and want faster epochs, but be considerate on a shared cluster
 #SBATCH --mem=64G                     # node has 512GB; the dataset + a few DataLoader workers' worth of decoded TIFFs is well under this
-#SBATCH --time=1-00:00:00             # DD-HH:MM:SS per MCC docs, max 14-00:00:00; generous first-run estimate -- CPU training is slower per-image than GPU, tighten once you have real per-epoch timing from the logs
+#SBATCH --time=3-00:00:00             # DD-HH:MM:SS per MCC docs, max 14-00:00:00; generous first-run estimate -- CPU training is slower per-image than GPU, tighten once you have real per-epoch timing from the logs
+#SBATCH --mail-user=rdri228@uky.edu
+#SBATCH --mail-type=ALL
 #SBATCH --output=logs/%x_%A_%a.out
 #SBATCH --error=logs/%x_%A_%a.err
 
 set -euo pipefail
 
-# EDIT: exact Anaconda module name/version -- check `module avail anaconda` on MCC first
-module load anaconda3
+module load Miniconda3
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-source activate "$REPO_ROOT/.condaenv"   # created by setup_env.sh
-cd "$REPO_ROOT/lance_landmarking/model"
+# SLURM runs a COPY of this script from its spool dir (/var/spool/slurm/...),
+# so BASH_SOURCE/$0 can't be used to locate the repo. $SLURM_SUBMIT_DIR is
+# the directory sbatch was run from -- submit from lance_landmarking/model/.
+MODEL_DIR="${SLURM_SUBMIT_DIR:?SLURM_SUBMIT_DIR not set}"
+if [[ ! -f "$MODEL_DIR/train.py" ]]; then
+    echo "ERROR: train.py not found in $MODEL_DIR -- run sbatch from lance_landmarking/model/" >&2
+    exit 1
+fi
+REPO_ROOT="$(cd "$MODEL_DIR/../.." && pwd)"
+ENV_DIR="$REPO_ROOT/.condaenv"           # created by setup_env.sh
+source activate "$ENV_DIR"
+cd "$MODEL_DIR"
+
+# sbatch passes the SUBMITTING shell's environment to the job. If that shell
+# already had this env active, `source activate` above can be a no-op and the
+# module's base-Miniconda python ends up first on PATH (no matplotlib etc.).
+# Don't depend on activation order: put the env first and call its python
+# explicitly.
+export PATH="$ENV_DIR/bin:$PATH"
+PYTHON="$ENV_DIR/bin/python3"
+[[ -x "$PYTHON" ]] || { echo "ERROR: $PYTHON not found -- run setup_env.sh" >&2; exit 1; }
+
+echo "python: $PYTHON  ($($PYTHON --version 2>&1))"
+if ! "$PYTHON" -c "import torch, torchvision, numpy, PIL, tifffile, imagecodecs, matplotlib"; then
+    echo "ERROR: environment at $REPO_ROOT/.condaenv is missing packages -- rerun setup_env.sh or: pip install -r requirements.txt" >&2
+    exit 1
+fi
 
 # no GPU: give PyTorch's intra-op (MKL/OpenMP) parallelism the CPUs SLURM
 # actually gave this task, rather than however many the node happens to have
+export PYTHONUNBUFFERED=1   # stdout to a file is block-buffered otherwise: epoch lines can lag by hours
 export OMP_NUM_THREADS="$SLURM_CPUS_PER_TASK"
 export MKL_NUM_THREADS="$SLURM_CPUS_PER_TASK"
 
@@ -62,18 +88,26 @@ BATCH_SIZE="${BATCH_SIZE:-16}"
 # above) inside the one training process, not to parallel data loading;
 # too many DataLoader workers just fights the main process for the same cores
 NUM_WORKERS="${NUM_WORKERS:-4}"
-RUN_DIR="runs/${ANGLE}_${SLURM_ARRAY_JOB_ID}"
+# To continue an interrupted run, reuse its directory and set RESUME=1, e.g.:
+#   sbatch --array=1 --export=ALL,RESUME=1,RUN_DIR=runs/Left_36756021,EPOCHS=100 train_lance_landmarks.slurm
+RUN_DIR="${RUN_DIR:-runs/${ANGLE}_${SLURM_ARRAY_JOB_ID}}"
+RESUME_ARG=()
+[[ -n "${RESUME:-}" ]] && RESUME_ARG=(--resume)
+# Warm start from weights only (for runs made before per-epoch checkpoints existed):
+#   INIT_WEIGHTS=runs/Left_36756021/best.pt
+[[ -n "${INIT_WEIGHTS:-}" ]] && RESUME_ARG+=(--init-weights "$INIT_WEIGHTS")
 
 echo "host=$(hostname)  angle=$ANGLE  cpus=$SLURM_CPUS_PER_TASK  epochs=$EPOCHS  batch_size=$BATCH_SIZE  num_workers=$NUM_WORKERS"
 
-python3 train.py \
+"$PYTHON" train.py \
     --angle "$ANGLE" \
     --epochs "$EPOCHS" \
     --batch-size "$BATCH_SIZE" \
     --num-workers "$NUM_WORKERS" \
-    --out-dir "$RUN_DIR"
+    --out-dir "$RUN_DIR" \
+    ${RESUME_ARG[@]+"${RESUME_ARG[@]}"}
 
-python3 evaluate.py \
+"$PYTHON" evaluate.py \
     --angle "$ANGLE" \
     --checkpoint "$RUN_DIR/best.pt" \
     --batch-size "$BATCH_SIZE"
