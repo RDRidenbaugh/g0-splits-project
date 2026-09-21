@@ -14,7 +14,7 @@
 set -euo pipefail
 
 # EDIT: exact Anaconda module name/version on MCC -- run `module avail anaconda` first
-module load anaconda3
+module load Miniconda3
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 ENV_DIR="$REPO_ROOT/.condaenv"
@@ -23,21 +23,39 @@ echo "!!! Make sure $REPO_ROOT is under /scratch/linkblue/\$USER/... !!!"
 echo "    (MCC \$HOME quota is 10GB -- the raw TIFF dataset alone will not fit)"
 echo
 
+# Python >=3.12 is required: numpy 2.5.x, tifffile 2026.x and imagecodecs 2026.x
+# publish no wheels for 3.11 (verified with `pip download --python-version`).
+# -y also overwrites a leftover env from an earlier failed run at this path.
+# Don't rebuild an env that this shell currently has active.
+if [[ "${CONDA_PREFIX:-}" == "$ENV_DIR" ]]; then
+    echo "ERROR: $ENV_DIR is active in this shell. Run 'conda deactivate' (repeat until the prompt prefix is gone), then rerun." >&2
+    exit 1
+fi
+
 echo "Creating conda env at $ENV_DIR"
-conda create -y --prefix "$ENV_DIR" python=3.11
-source activate "$ENV_DIR"
+conda create -y --prefix "$ENV_DIR" python=3.12
+
+# Use the new env's interpreter by full path for everything below. A bare
+# `pip`/`python3` resolves via PATH, and `module load Miniconda3` can put the
+# base Miniconda (an older Python) ahead of the env -- which is how a base
+# pip ended up unable to see torch >2.8 and failing on numpy/torch pins.
+PYTHON="$ENV_DIR/bin/python3"
+echo "Env python: $($PYTHON --version 2>&1) at $PYTHON"
+"$PYTHON" -c 'import sys; assert sys.version_info >= (3, 12), sys.version' \
+    || { echo "ERROR: env python is older than 3.12" >&2; exit 1; }
 
 echo "Installing PyTorch (CPU build -- MCC has no GPUs)"
-pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+# same pins as requirements.txt so the next step finds them already satisfied
+"$PYTHON" -m pip install --index-url https://download.pytorch.org/whl/cpu torch==2.14.0 torchvision==0.29.0
 
 echo "Installing remaining dependencies"
-pip install -r "$REPO_ROOT/lance_landmarking/model/requirements.txt"
+"$PYTHON" -m pip install -r "$REPO_ROOT/lance_landmarking/model/requirements.txt"
 
 echo "Pre-downloading pretrained ResNet18 weights (needs internet -- do this here, not in the SLURM job)"
-python3 -c "
+"$PYTHON" -c "
 import torchvision
 torchvision.models.resnet18(weights=torchvision.models.ResNet18_Weights.DEFAULT)
 print('cached to', __import__('torch').hub.get_dir())
 "
 
-echo "Done. Compute nodes just need: module load anaconda3 && source activate $ENV_DIR"
+echo "Done. Env: $ENV_DIR  (train_lance_landmarks.slurm calls its python directly)"

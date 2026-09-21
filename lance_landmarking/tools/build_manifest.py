@@ -144,7 +144,10 @@ def main():
     ap.add_argument("--root", default=str(Path(__file__).parent.parent), help="lance_landmarking/ directory")
     ap.add_argument("--out", default=str(Path(__file__).parent.parent / "manifest.csv"))
     args = ap.parse_args()
-    root = Path(args.root)
+    root = Path(args.root).resolve()
+
+    def rel(p: Path) -> str:
+        return Path(p).resolve().relative_to(root).as_posix()
 
     raw_maps = build_raw_maps(root)
     rows = []
@@ -248,9 +251,11 @@ def main():
                         "group": group,
                         "angle": angle,
                         "key": key,
-                        "marked_tiff": str(marked_path) if marked_path else "",
-                        "txt": str(txt_path) if txt_path else "",
-                        "raw_image": str(raw_paths[0]) if raw_paths else "",
+                        # relative to root so the manifest works after the
+                        # tree is copied to another machine (e.g. the cluster)
+                        "marked_tiff": rel(marked_path) if marked_path else "",
+                        "txt": rel(txt_path) if txt_path else "",
+                        "raw_image": rel(raw_paths[0]) if raw_paths else "",
                         "raw_group": raw_group or "",
                         "n_expected": expected_n,
                         "n_found": n_found,

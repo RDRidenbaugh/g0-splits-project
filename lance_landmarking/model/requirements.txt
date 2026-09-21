@@ -1,6 +1,7 @@
 # Exact versions validated locally (2026-09-18). MCC has no GPUs, so
 # torch/torchvision are the same CPU build used in local dev and on the
 # cluster -- no CUDA index needed (see setup_env.sh).
+# Requires Python >=3.12 (numpy/tifffile/imagecodecs pins have no 3.11 wheels).
 torch==2.14.0
 torchvision==0.29.0
 numpy==2.5.2

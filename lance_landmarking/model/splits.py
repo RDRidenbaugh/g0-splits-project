@@ -13,6 +13,7 @@ import random
 import re
 from collections import defaultdict
 from dataclasses import dataclass
+from pathlib import Path
 
 INDIVIDUAL_RE = re.compile(r"^(?P<id>.+)_(?P<angle>[blr])(?P<frame>\d*)$")
 VERSION_SUFFIX_RE = re.compile(r"-?v\d+$")
@@ -40,6 +41,7 @@ def family_of(key: str) -> str:
 
 def load_clean_samples(manifest_csv: str, angle: str) -> list[Sample]:
     samples = []
+    root = Path(manifest_csv).resolve().parent  # manifest paths are relative to its directory
     with open(manifest_csv, newline="") as f:
         for row in csv.DictReader(f):
             if row["angle"] != angle:
@@ -61,8 +63,8 @@ def load_clean_samples(manifest_csv: str, angle: str) -> list[Sample]:
                     angle=row["angle"],
                     key=row["key"],
                     family=family_of(row["key"]),
-                    raw_image=row["raw_image"],
-                    marked_tiff=row["marked_tiff"],
+                    raw_image=str(root / row["raw_image"]),
+                    marked_tiff=str(root / row["marked_tiff"]) if row["marked_tiff"] else "",
                     n_expected=int(row["n_expected"]),
                     landmarks_px=pts,
                     image_width=int(row["image_width"]) if row["image_width"] else None,

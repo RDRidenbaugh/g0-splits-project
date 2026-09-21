@@ -66,6 +66,10 @@ def main():
     ap.add_argument("--num-workers", type=int, default=2)
     ap.add_argument("--out-dir", default=None)
     ap.add_argument("--limit", type=int, default=None, help="debug: cap total samples")
+    ap.add_argument("--resume", action="store_true",
+                    help="continue an interrupted run from <out-dir>/last.pt (weights + optimizer + epoch + history); --epochs is the TOTAL target")
+    ap.add_argument("--init-weights", default=None,
+                    help="start from model weights only (e.g. an old best.pt); optimizer and epoch counter start fresh")
     args = ap.parse_args()
 
     out_dir = Path(args.out_dir or (Path(__file__).parent / "runs" / args.angle))
@@ -105,7 +109,19 @@ def main():
 
     history = {"train_loss": [], "val_loss": []}
     best_val = float("inf")
-    for epoch in range(1, args.epochs + 1):
+    start_epoch = 0
+    ckpt_path = out_dir / "last.pt"
+    if args.resume:
+        ckpt = torch.load(ckpt_path, map_location=device)
+        model.load_state_dict(ckpt["model"])
+        optimizer.load_state_dict(ckpt["optimizer"])
+        history, best_val, start_epoch = ckpt["history"], ckpt["best_val"], ckpt["epoch"]
+        print(f"Resumed from {ckpt_path}: {start_epoch} epochs done, best_val={best_val:.5f}")
+    elif args.init_weights:
+        model.load_state_dict(torch.load(args.init_weights, map_location=device))
+        print(f"Initialized weights from {args.init_weights} (optimizer/epoch counter fresh)")
+
+    for epoch in range(start_epoch + 1, args.epochs + 1):
         t0 = time.time()
         train_loss = run_epoch(model, train_loader, optimizer, device, train=True)
         val_loss = run_epoch(model, val_loader, optimizer, device, train=False) if len(val_ds) else float("nan")
@@ -116,10 +132,17 @@ def main():
         if val_loss < best_val:
             best_val = val_loss
             torch.save(model.state_dict(), out_dir / "best.pt")
-    torch.save(model.state_dict(), out_dir / "last.pt")
-
-    with open(out_dir / "history.json", "w") as f:
-        json.dump(history, f, indent=2)
+        # every epoch, so a walltime kill loses at most one epoch. Write to a
+        # temp file then rename: a kill mid-write can't corrupt the checkpoint.
+        tmp = out_dir / "last.pt.tmp"
+        torch.save(
+            {"model": model.state_dict(), "optimizer": optimizer.state_dict(),
+             "epoch": epoch, "best_val": best_val, "history": history},
+            tmp,
+        )
+        os.replace(tmp, ckpt_path)
+        with open(out_dir / "history.json", "w") as f:
+            json.dump(history, f, indent=2)
 
     plt.figure()
     plt.plot(history["train_loss"], label="train")
