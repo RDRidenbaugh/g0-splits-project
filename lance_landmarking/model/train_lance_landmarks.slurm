@@ -30,13 +30,13 @@
 
 #SBATCH --job-name=lance-landmark
 #SBATCH --array=0-2
-#SBATCH --partition=short            # MCC's documented partitions are "normal" and "jumbo" (jumbo = the 2 large-memory/4TB nodes -- not needed here)
+#SBATCH --partition=normal            # MCC's documented partitions are "normal" and "jumbo" (jumbo = the 2 large-memory/4TB nodes -- not needed here)
 #SBATCH --account=coa_cli242_uksr     # EDIT: required by MCC (-A); your project/allocation code
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=32            # out of 128/node -- raise if you have the node to yourself and want faster epochs, but be considerate on a shared cluster
 #SBATCH --mem=64G                     # node has 512GB; the dataset + a few DataLoader workers' worth of decoded TIFFs is well under this
-#SBATCH --time=3-00:00:00             # DD-HH:MM:SS per MCC docs, max 14-00:00:00; generous first-run estimate -- CPU training is slower per-image than GPU, tighten once you have real per-epoch timing from the logs
+#SBATCH --time=14-00:00:00             # DD-HH:MM:SS per MCC docs, max 14-00:00:00; generous first-run estimate -- CPU training is slower per-image than GPU, tighten once you have real per-epoch timing from the logs
 #SBATCH --mail-user=rdri228@uky.edu
 #SBATCH --mail-type=ALL
 #SBATCH --output=logs/%x_%A_%a.out
