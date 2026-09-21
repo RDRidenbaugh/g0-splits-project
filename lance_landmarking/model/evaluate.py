@@ -22,7 +22,7 @@ from landmarks_io import read_image_meta  # noqa: E402
 
 from constants import EXPECTED_N, HEATMAP_STRIDE, MANIFEST_PATH
 from dataset import LanceLandmarkDataset
-from heatmap import soft_argmax_decode
+from heatmap import dsnt_expectation, soft_argmax_decode
 from model import HeatmapNet
 from splits import load_clean_samples, split_samples
 
@@ -36,6 +36,8 @@ def main():
     ap.add_argument("--test-frac", type=float, default=0.15)
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--batch-size", type=int, default=8)
+    ap.add_argument("--loss", choices=["mse", "dsnt"], default="mse",
+                    help="how the checkpoint was trained; dsnt decodes with the soft-argmax expectation instead of the peak window")
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
 
@@ -66,7 +68,10 @@ def main():
         for batch in loader:
             images = batch["image"].to(device)
             preds = model(images)  # (B, K, Hh, Wh)
-            pred_hm_xy = soft_argmax_decode(preds.cpu())  # (B, K, 2) heatmap-pixel space
+            if args.loss == "dsnt":
+                pred_hm_xy = dsnt_expectation(preds.cpu())[0]  # (B, K, 2) heatmap-pixel space
+            else:
+                pred_hm_xy = soft_argmax_decode(preds.cpu())  # (B, K, 2) heatmap-pixel space
 
             scale = batch["scale"]  # (B,)
             pad = batch["pad"]  # (B, 2)

@@ -82,12 +82,13 @@ export MKL_NUM_THREADS="$SLURM_CPUS_PER_TASK"
 
 ANGLES=(Bottom Left Right)
 ANGLE="${ANGLES[$SLURM_ARRAY_TASK_ID]}"
-EPOCHS="${EPOCHS:-100}"
-BATCH_SIZE="${BATCH_SIZE:-16}"
-# keep worker count modest -- most cores should go to conv math (OMP_NUM_THREADS
-# above) inside the one training process, not to parallel data loading;
-# too many DataLoader workers just fights the main process for the same cores
-NUM_WORKERS="${NUM_WORKERS:-4}"
+# Defaults match what was validated locally on Right (batch 8, lr 1e-3, DSNT loss): held-out
+# val error plateaued by ~epoch 8-12 with constant lr, so 40 epochs with cosine lr decay is plenty.
+EPOCHS="${EPOCHS:-40}"
+BATCH_SIZE="${BATCH_SIZE:-8}"
+# 0 workers + --cache-images: each TIFF is decoded once (first epoch), then served from RAM,
+# so all cores go to conv math instead of fighting DataLoader workers over decoding
+NUM_WORKERS="${NUM_WORKERS:-0}"
 # To continue an interrupted run, reuse its directory and set RESUME=1, e.g.:
 #   sbatch --array=1 --export=ALL,RESUME=1,RUN_DIR=runs/Left_36756021,EPOCHS=100 train_lance_landmarks.slurm
 RUN_DIR="${RUN_DIR:-runs/${ANGLE}_${SLURM_ARRAY_JOB_ID}}"
@@ -104,12 +105,16 @@ echo "host=$(hostname)  angle=$ANGLE  cpus=$SLURM_CPUS_PER_TASK  epochs=$EPOCHS 
     --epochs "$EPOCHS" \
     --batch-size "$BATCH_SIZE" \
     --num-workers "$NUM_WORKERS" \
+    --cache-images \
+    --loss dsnt \
+    --lr-decay cosine \
     --out-dir "$RUN_DIR" \
     ${RESUME_ARG[@]+"${RESUME_ARG[@]}"}
 
 "$PYTHON" evaluate.py \
     --angle "$ANGLE" \
     --checkpoint "$RUN_DIR/best.pt" \
+    --loss dsnt \
     --batch-size "$BATCH_SIZE"
 
 echo "Done: $ANGLE -> $RUN_DIR"
