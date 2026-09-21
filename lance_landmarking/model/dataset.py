@@ -43,17 +43,25 @@ def letterbox(img: np.ndarray, size: int):
 
 
 class LanceLandmarkDataset(Dataset):
-    def __init__(self, samples: list[Sample], input_size: int = INPUT_SIZE):
+    def __init__(self, samples: list[Sample], input_size: int = INPUT_SIZE, cache: bool = False):
         self.samples = samples
         self.input_size = input_size
+        # opt-in: keep each letterboxed uint8 canvas after first decode. Decoding
+        # the LZW TIFFs is ~2/3 of per-sample time and there is no augmentation,
+        # so later epochs are identical. (Per DataLoader worker process.)
+        self._cache = {} if cache else None
 
     def __len__(self):
         return len(self.samples)
 
     def __getitem__(self, idx: int):
         s = self.samples[idx]
-        img = load_rgb(s.raw_image)
-        canvas, scale, pad_x, pad_y = letterbox(img, self.input_size)
+        if self._cache is not None and idx in self._cache:
+            canvas, scale, pad_x, pad_y = self._cache[idx]
+        else:
+            canvas, scale, pad_x, pad_y = letterbox(load_rgb(s.raw_image), self.input_size)
+            if self._cache is not None:
+                self._cache[idx] = (canvas, scale, pad_x, pad_y)
 
         pts = np.asarray(s.landmarks_px, dtype=np.float32)  # (K, 2) orig pixel space
         pts_input = pts * scale + np.array([pad_x, pad_y], dtype=np.float32)  # INPUT_SIZE space

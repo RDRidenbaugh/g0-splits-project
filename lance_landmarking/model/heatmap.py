@@ -54,3 +54,18 @@ def soft_argmax_decode(heatmaps: torch.Tensor, window: int = 5) -> torch.Tensor:
             cy = (patch * ys).sum() / total
             out[b, c] = torch.tensor([cx.item(), cy.item()])
     return out.reshape(*lead, k, 2)
+
+
+def dsnt_expectation(pred: torch.Tensor):
+    """Differentiable soft-argmax (DSNT). pred: (B, K, H, W) raw scores.
+    Returns ((B, K, 2) expected (x, y) in heatmap-pixel coordinates,
+             (B, K, H, W) spatial softmax probabilities).
+    Unlike a Gaussian-regression MSE there is no all-zeros solution: the
+    loss is on the predicted POSITION, so it has a gradient from step 1."""
+    b, k, h, w = pred.shape
+    prob = torch.softmax(pred.reshape(b, k, h * w), dim=-1).reshape(b, k, h, w)
+    xs = torch.arange(w, dtype=prob.dtype, device=prob.device)
+    ys = torch.arange(h, dtype=prob.dtype, device=prob.device)
+    x = (prob.sum(dim=2) * xs).sum(dim=-1)
+    y = (prob.sum(dim=3) * ys).sum(dim=-1)
+    return torch.stack([x, y], dim=-1), prob
