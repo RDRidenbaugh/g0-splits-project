@@ -1,0 +1,11 @@
+suppressMessages(library(geomorph))
+src <- readLines("/home/labradorite/g0-splits-project/novel_genai_landmarking_protocol/tools/audit/old_protocol_sliding_pilot.R")
+eval(parse(text=src[2:10]))
+d <- load_view("Bottom",17)
+f <- function(keep, lab){ fit <- gpagen(d$A[keep,,], print.progress=FALSE)
+  m <- procD.lm(shape~g, data=geomorph.data.frame(shape=fit$coords,g=d$g), iter=199, print.progress=FALSE)
+  p <- gm.prcomp(fit$coords)
+  cat(sprintf("%-28s group R2=%.3f  PC1-3%%=%s\n", lab, m$aov.table$Rsq[1], paste(round(100*p$sdev[1:3]^2/sum(p$sdev^2),1),collapse="/"))) }
+f(1:17,"Bottom all 17")
+f(setdiff(1:17,9),"Bottom minus LM9")
+f(setdiff(1:17,c(6,7,8,9,10,11,12)),"Bottom minus fork cluster")

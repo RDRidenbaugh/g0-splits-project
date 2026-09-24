@@ -1,0 +1,67 @@
+{
+ "_comment": "Hand corrections to the automatic sclerite mask, full-resolution pixel coords (x, y). 'erase' polygons remove structures that touch the lance but are not part of it (golden rods, the basal flap). This is the same correction an annotator makes to a pre-filled mask.",
+ "ll280xll284-1/Bottom": {
+  "erase": [
+   [
+    [
+     0,
+     1150
+    ],
+    [
+     396,
+     1150
+    ],
+    [
+     394,
+     1276
+    ],
+    [
+     285,
+     1290
+    ],
+    [
+     275,
+     1325
+    ],
+    [
+     0,
+     1460
+    ]
+   ]
+  ]
+ },
+ "px014xnp060v4-2/Bottom": {
+  "erase": [
+   [
+    [
+     0,
+     300
+    ],
+    [
+     1000,
+     300
+    ],
+    [
+     1000,
+     560
+    ],
+    [
+     780,
+     780
+    ],
+    [
+     600,
+     780
+    ],
+    [
+     540,
+     840
+    ],
+    [
+     0,
+     900
+    ]
+   ]
+  ]
+ }
+}

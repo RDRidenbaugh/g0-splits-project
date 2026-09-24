@@ -55,12 +55,13 @@ def main():
     if device.type == "cpu":
         n_threads = int(os.environ.get("SLURM_CPUS_PER_TASK", os.environ.get("OMP_NUM_THREADS", os.cpu_count() or 1)))
         torch.set_num_threads(n_threads)
-    model = HeatmapNet(EXPECTED_N[args.angle], pretrained=False).to(device)
+    n_lm = test_s[0].n_expected  # from the labels, so other protocols work unchanged
+    model = HeatmapNet(n_lm, pretrained=False).to(device)
     model.load_state_dict(torch.load(args.checkpoint, map_location=device))
     model.eval()
 
-    px_errors_per_landmark = [[] for _ in range(EXPECTED_N[args.angle])]
-    mm_errors_per_landmark = [[] for _ in range(EXPECTED_N[args.angle])]
+    px_errors_per_landmark = [[] for _ in range(n_lm)]
+    mm_errors_per_landmark = [[] for _ in range(n_lm)]
     per_image = []
 
     meta_cache = {}
@@ -98,7 +99,7 @@ def main():
 
                 v = valid[b]
                 img_px_errs = []
-                for k in range(EXPECTED_N[args.angle]):
+                for k in range(n_lm):
                     if not v[k]:
                         continue
                     e_px = err_px[k].item()
