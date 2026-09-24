@@ -4,3 +4,15 @@ scripts/.Rhistory
 __pycache__/
 *.pyc
 lance_landmarking/model/runs/
+
+# novel_genai_landmarking_protocol: local data and generated files (kept on disk, not versioned)
+novel_genai_landmarking_protocol/Landmarked_Images/
+novel_genai_landmarking_protocol/Raw_Images/
+novel_genai_landmarking_protocol/autolabels/
+novel_genai_landmarking_protocol/analysis/data/
+novel_genai_landmarking_protocol/analysis/output/
+novel_genai_landmarking_protocol/**/*.log
+# training manifests generated for the protocol comparison
+lance_landmarking/manifest_oldproto_qc.csv
+lance_landmarking/manifest_newproto.csv
+lance_landmarking/manifest_r2_*.csv

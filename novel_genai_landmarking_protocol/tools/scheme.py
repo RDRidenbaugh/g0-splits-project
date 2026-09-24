@@ -1,4 +1,4 @@
-"""Single source of truth for the lance landmarking protocol (v1).
+"""Single source of truth for the lance landmarking protocol (v1.4).
 
 anchors  : fixed landmarks a human (or the CNN) places directly.
            old  = matching point number in Lance_Imaging_Morphometrics_v2
@@ -11,27 +11,26 @@ curves   : sliding-semilandmark curves, resampled at equal arc length
 import numpy as np
 
 
-def _dorsal_start(apex, heel, suture1, window0):
-    """Start of the dorsal curve: moving dorsally from the suture-1 ventral end
-    along the line perpendicular to the lance's own axis (heel-ventral junction
-    -> apex), the first place the line reaches the lance's dorsal edge.
-    Computed, never clicked.
+def _dorsal_start(apex, heel, window0, ventral_ref):
+    """Start of the dorsal curve (v1.4): moving dorsally from the window's
+    proximal end (R11/L11) along the line perpendicular to the lance's own axis
+    (heel-ventral junction -> apex), the first place the line reaches the
+    lance's dorsal edge. Computed, never clicked.
 
-    "First" matters: when the golden basal flap lies above the dorsal margin
-    near suture 1, the line also crosses the flap's underside and top further
-    up; those crossings are not the lance. (If the flap touches the edge, so no
-    background separates them, the edge can't be found this way; the QC height
-    check then rejects the label.)"""
+    v1.3 used the line through the suture-1 ventral end instead. That start lies
+    next to the heel, where the golden basal flap often sits over the dorsal
+    margin, and all the curve's evenly spaced semilandmarks hang from it; in the
+    round-2 comparison the window-level start gave better repeatability and no
+    failures on never-seen specimens with flaps. "First" crossing: a flap above
+    the edge is crossed further up and is never taken."""
     def fn(P, C, near):
         L = np.linalg.norm(P[apex] - P[heel])
         ax = (P[apex] - P[heel]) / L
         nr = np.array([-ax[1], ax[0]])
-        up = np.sign((P[window0] - P[suture1]) @ nr)  # dorsal side of the ventral margin
-        rel = C - P[suture1]
+        up = np.sign((P[window0] - P[ventral_ref]) @ nr)  # dorsal side (the window lies dorsal of the ventral margin)
+        rel = C - P[window0]
         along, across = rel @ ax, up * (rel @ nr)
-        # beyond 10% of the lance length above the ventral margin, so the
-        # ventral edge next to R04 itself is never taken
-        cand = np.flatnonzero((np.abs(along) < 3) & (across > 0.1 * L))
+        cand = np.flatnonzero((np.abs(along) < 3) & (across > 0))
         return C[cand[np.argmin(across[cand])]]
     return fn
 
@@ -198,8 +197,8 @@ def _lateral(side, n_sut, old_apex, old_split, old_win_end, dropped_old):
     distal_start = f"{s}{win0 - 1:02d}"  # split point if present, else last suture
     return dict(
         anchors=a,
-        computed={comp: dict(fn=_dorsal_start(f"{s}01", f"{s}02", f"{s}04", f"{s}{win0:02d}"), type="III",
-                             name="dorsal curve start: first point where the line through the suture-1 ventral "
+        computed={comp: dict(fn=_dorsal_start(f"{s}01", f"{s}02", f"{s}{win0:02d}", f"{s}04"), type="III",
+                             name="dorsal curve start: first point where the line through the window's proximal "
                                   "end, perpendicular to the heel-ventral junction -> apex axis, reaches the "
                                   "lance's dorsal edge (not the basal flap above it)")},
         curves=[
