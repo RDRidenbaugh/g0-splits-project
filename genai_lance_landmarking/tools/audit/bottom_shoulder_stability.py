@@ -9,7 +9,7 @@ renumbering, so it refers to the notch as B12 and the shoulders as B13/B14).
 usage: python bottom_shoulder_stability.py out.json
 """
 import sys, csv, json, random, numpy as np, tifffile
-sys.path.insert(0,'/home/labradorite/g0-splits-project/novel_genai_landmarking_protocol/tools')
+sys.path.insert(0,'/home/labradorite/g0-splits-project/genai_lance_landmarking/tools')
 from scipy import ndimage as ndi
 from skimage.filters import threshold_otsu, gaussian
 from skimage.measure import find_contours

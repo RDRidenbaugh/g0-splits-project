@@ -1,4 +1,4 @@
-"""Generates novel_genai_landmarking_protocol/Lance_Imaging_Morphometrics_v3.docx.
+"""Generates genai_lance_landmarking/Lance_Imaging_Morphometrics_v3.docx.
 
 The human-executable version of Lance_Landmarking_Protocol.md (v1.4), laid out
 like Lance_Imaging_Morphometrics_v2.docx (rehydration and imaging steps are
@@ -9,7 +9,7 @@ Point definitions and the old->new mapping are read from landmark_schema.json
 (itself generated from tools/scheme.py), so the tables can't drift from the code.
 
 usage (from repo root, project venv):
-    python novel_genai_landmarking_protocol/tools/docgen/make_protocol_docx.py
+    python genai_lance_landmarking/tools/docgen/make_protocol_docx.py
 """
 import json
 import zipfile
@@ -26,7 +26,7 @@ from docx.shared import Inches, Pt, RGBColor
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "Lance_Imaging_Morphometrics_v3.docx"
-OLD = ROOT / "Landmarked_Images" / "Lance_Imaging_Morphometrics_v2.docx"
+OLD = ROOT / "landmarked_images" / "Lance_Imaging_Morphometrics_v2.docx"
 FIG = ROOT / "figures"
 SCHEMA = json.load(open(ROOT / "landmark_schema.json"))
 FIG_SPECIMEN = "ll280xll284-1"  # N. lecontei parent used for the reference figures
@@ -295,7 +295,7 @@ steps([
 
 doc.add_heading("Steps for every image", level=2)
 steps([
-    "Open the **raw** TIFF (from Raw_Images), never a previously landmarked _MARK file.",
+    "Open the **raw** TIFF (from lance_landmarking/raw_images), never a previously landmarked _MARK file.",
     ("**Calibrate from the scale bar.** Use the Straight Line tool to draw a line exactly along the scale bar, end to "
      "end. Analyze › Set Scale: Known distance = the bar's length (1 mm), Unit = mm, **Global unticked**. Write the "
      "“Distance in pixels” into the px_per_mm column of the sheet.",
@@ -461,7 +461,7 @@ table(["Column", "What to write"], [
 
 doc.add_heading("After digitizing: converting ROI sets to landmarks", level=2)
 steps([
-    "From the repository root, run: python novel_genai_landmarking_protocol/tools/roi_to_landmarks.py auto "
+    "From the repository root, run: python genai_lance_landmarking/tools/roi_to_landmarks.py auto "
     "--table all_landmarks.csv path/to/*_ROI.zip",
     "Each ROI set gets a SampleID_V_ROI_landmarks.csv (Right 42 points, Left 40, Dorsal 38), and all_landmarks.csv "
     "gets one row per image.",

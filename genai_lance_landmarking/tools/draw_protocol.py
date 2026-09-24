@@ -18,7 +18,7 @@ from skimage.filters import threshold_otsu, gaussian
 from skimage.measure import find_contours
 from skimage.morphology import disk, opening, closing
 
-LANCE = "/home/labradorite/g0-splits-project/lance_landmarking/"
+LANCE = "/home/labradorite/g0-splits-project/lance_landmarking/cnn/"  # the manifests live here; their image paths are relative to it
 sys.path.insert(0, os.path.dirname(__file__))
 from scheme import SCHEME  # noqa: E402
 

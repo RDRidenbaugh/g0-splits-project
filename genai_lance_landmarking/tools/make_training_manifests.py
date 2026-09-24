@@ -1,13 +1,13 @@
 """Two training manifests over the SAME images for a fair old-vs-new CNN comparison.
 
-Rows = lance_landmarking/manifest.csv rows whose new-protocol automatic label
+Rows = lance_landmarking/cnn/manifest.csv rows whose new-protocol automatic label
 passed QC (autolabels/qc_final.csv), in the original manifest order, so
 splits.split_samples() gives identical train/val/test splits for both.
 
-  lance_landmarking/manifest_oldproto_qc.csv  old (v2) points, click-order errors fixed
-  lance_landmarking/manifest_newproto.csv     new (v1.3) points: Right 42, Left 40, Bottom 38
+  lance_landmarking/cnn/manifest_oldproto_qc.csv  old (v2) points, click-order errors fixed
+  lance_landmarking/cnn/manifest_newproto.csv     new (v1.3) points: Right 42, Left 40, Bottom 38
 
-Paths stay relative to lance_landmarking/, so the files also work on the cluster copy.
+Image paths are relative to the manifests' own directory (lance_landmarking/cnn/), as in manifest.csv.
 """
 import csv, json, os, sys
 import numpy as np
@@ -16,7 +16,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from autolabel import fix_order, point_order  # noqa: E402
 
-LANCE = "/home/labradorite/g0-splits-project/lance_landmarking/"
+LANCE = "/home/labradorite/g0-splits-project/lance_landmarking/cnn/"  # the manifests live here; their image paths are relative to it
 AL = os.path.join(HERE, "..", "autolabels")
 
 

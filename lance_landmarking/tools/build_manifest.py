@@ -1,12 +1,14 @@
 """Build a training manifest for the lance-landmarking CNN.
 
-Walks Raw_Images/<group>/ and Landmarked_<group>/{marked_tiff,txt}/<angle>/
-for every group and angle, matches raw <-> marked_tiff <-> txt by a
+Walks raw_images/<group>/ and marked_images/landmarked_<group>/{marked_tiff,txt}/<angle>/
+(directory names are lower-case snake_case; group and angle values in the
+manifest keep their usual spelling, e.g. "LBX", "Right") for every group and angle, matches raw <-> marked_tiff <-> txt by a
 normalized filename stem, extracts pixel-space landmark ground truth
 (preferring the ImageJ ROI embedded in the marked TIFF; falling back to the
 mm .txt export converted via that image's own XResolution), and writes one
-row per landmarked image to manifest.csv plus a manifest_issues.csv of
-everything that needed a flag.
+row per landmarked image to cnn/manifest.csv plus a manifest_issues.csv of
+everything that needed a flag. Image paths in the manifest are relative to the
+manifest's own directory (cnn/), which is how splits.load_clean_samples reads them.
 
 This does not guess past genuinely ambiguous cases -- unmatched or
 inconsistent files are flagged, not silently dropped or silently paired.
@@ -18,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import os
 import json
 import re
 import sys
@@ -56,7 +59,7 @@ def normalize_stem(stem: str) -> tuple[str, list[str]]:
 
 
 def angle_folder_name(landmarked_dir: Path, angle: str) -> Path | None:
-    candidates = [angle, f"{angle} Side"]
+    candidates = [angle.lower(), f"{angle.lower()}_side"]
     for c in candidates:
         p = landmarked_dir / c
         if p.is_dir():
@@ -80,7 +83,7 @@ def list_files(d: Path, exts: tuple[str, ...]) -> dict[str, list[Path]]:
 def build_raw_maps(root: Path) -> dict[str, dict[str, list[Path]]]:
     maps = {}
     for group in GROUPS:
-        d = root / "Raw_Images" / group
+        d = root / "raw_images" / group.lower()
         maps[group] = list_files(d, (".tif", ".tiff"))
     return maps
 
@@ -142,22 +145,25 @@ def max_displacement(list_of_pointsets: list[list[tuple[float, float]]]) -> floa
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--root", default=str(Path(__file__).parent.parent), help="lance_landmarking/ directory")
-    ap.add_argument("--out", default=str(Path(__file__).parent.parent / "manifest.csv"))
+    ap.add_argument("--out", default=str(Path(__file__).parent.parent / "cnn" / "manifest.csv"))
     args = ap.parse_args()
     root = Path(args.root).resolve()
 
+    out_dir = Path(args.out).resolve().parent
+
     def rel(p: Path) -> str:
-        return Path(p).resolve().relative_to(root).as_posix()
+        # relative to the manifest's directory, e.g. ../raw_images/f1/X.tif
+        return Path(os.path.relpath(Path(p).resolve(), out_dir)).as_posix()
 
     raw_maps = build_raw_maps(root)
     rows = []
     generic_dup_pass_hits = []
 
     for group in GROUPS:
-        landmarked_dir = root / f"Landmarked_{group}"
+        landmarked_dir = root / "marked_images" / f"landmarked_{group.lower()}"
         for angle in ANGLES:
             marked_dir = angle_folder_name(landmarked_dir / "marked_tiff", angle)
-            txt_dir = landmarked_dir / "txt" / angle
+            txt_dir = landmarked_dir / "txt" / angle.lower()
             marked_map = list_files(marked_dir, (".tif", ".tiff"))
             txt_map = list_files(txt_dir, (".txt",))
 

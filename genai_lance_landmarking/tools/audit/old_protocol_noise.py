@@ -1,6 +1,6 @@
 import numpy as np, glob, json, os, collections
-base='/home/labradorite/g0-splits-project/novel_genai_landmarking_protocol/Landmarked_Images'
-runs='/home/labradorite/g0-splits-project/lance_landmarking/model/runs/21ix26_runs'
+base='/home/labradorite/g0-splits-project/genai_lance_landmarking/landmarked_images'
+runs='/home/labradorite/g0-splits-project/lance_landmarking/cnn/runs/21ix26_runs'
 N={'Bottom':17,'Left':32,'Right':36}
 def gpa(X):
     X=X-X.mean(1,keepdims=True); X=X/np.linalg.norm(X,axis=(1,2),keepdims=True)
@@ -13,7 +13,7 @@ def gpa(X):
         m=m2
     return X,m
 for v,n in N.items():
-    files=[f for f in glob.glob(f'{base}/Landmarked_*/txt/{v}/*.txt')]
+    files=[f for f in glob.glob(f'{base}/landmarked_*/txt/{v.lower()}/*.txt')]
     cnt=collections.Counter(); groups=[]; A=[]
     for f in files:
         a=np.loadtxt(f); cnt[len(a)]+=1
@@ -22,7 +22,7 @@ for v,n in N.items():
     X,m=gpa(A.copy())
     csize=np.sqrt(((A-A.mean(1,keepdims=True))**2).sum((1,2)))
     res=X-m; sd=np.sqrt((res**2).sum(2).mean(0))
-    ev=json.load(open(glob.glob(f'{runs}/{v}_*/eval_test.json')[0]))
+    ev=json.load(open(glob.glob(f'{runs}/{v.lower()}_*/eval_test.json')[0]))
     pl=ev['per_landmark_mean_px_error']
     pl=[pl[str(i)] if isinstance(pl,dict) else pl[i] for i in range(n)] if not isinstance(pl,dict) else [pl.get(str(i+1),pl.get(str(i))) for i in range(n)]
     print(f'\n== {v}: files {len(files)} point-count dist {dict(cnt)}; n used {len(A)}; centroid size mm mean {csize.mean():.3f} CV {csize.std()/csize.mean():.3f}')

@@ -39,7 +39,7 @@ sys.path.insert(0, HERE)
 from autolabel import fix_order  # noqa: E402
 
 AL = os.path.join(HERE, "..", "autolabels")
-LANCE = "/home/labradorite/g0-splits-project/lance_landmarking/"
+LANCE = "/home/labradorite/g0-splits-project/lance_landmarking/cnn/"  # the manifests live here; their image paths are relative to it
 SCHEMA = json.load(open(os.path.join(HERE, "..", "landmark_schema.json")))
 # old 30 (Right) / 26 (Left) sit proximal to where the new dorsal curve starts (R18/L18), so they are not used
 DORSAL_OLD = {"Right": range(31, 37), "Left": range(27, 33)}

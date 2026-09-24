@@ -38,7 +38,7 @@ The new protocol:
 
 ## 1. What is wrong with the old protocol: evidence from the existing data
 
-All numbers below come from the 979 digitized configurations in `Landmarked_Images/` (Right 342, Left 322, Bottom 315 with the correct point count) and from the per-landmark test error of the current DSNT CNN (`lance_landmarking/model/runs/21ix26_runs`). Scripts are in `tools/audit/`.
+All numbers below come from the 979 digitized configurations in `landmarked_images/` (Right 342, Left 322, Bottom 315 with the correct point count) and from the per-landmark test error of the current DSNT CNN (`lance_landmarking/cnn/runs/21ix26_runs`). Scripts are in `tools/audit/`.
 
 ### 1.1 A few points carry most of the error, and they drive PC1
 
@@ -371,5 +371,5 @@ The pilot in §1.7 shows the improvement can't be demonstrated on the old coordi
 - Nibali, A., He, Z., Morgan, S. & Prendergast, L. (2018) Numerical coordinate regression with convolutional neural networks. arXiv:1801.07372.
 - Porto, A. & Voje, K.L. (2020) ML-morph: a fast, accurate and general approach for automated detection and landmarking of biological structures in images. *Methods Ecol. Evol.* 11:500–512.
 - Ronneberger, O., Fischer, P. & Brox, T. (2015) U-Net: convolutional networks for biomedical image segmentation. *MICCAI 2015*, LNCS 9351:234–241.
-- Tait, N.N. (1962) The anatomy of the sawfly *Perga affinis affinis* Kirby (Hymenoptera: Symphyta). *Aust. J. Zool.* 10. (The generic terminology source provided in `Landmarked_Images/`.)
+- Tait, N.N. (1962) The anatomy of the sawfly *Perga affinis affinis* Kirby (Hymenoptera: Symphyta). *Aust. J. Zool.* 10. (The generic terminology source provided in `landmarked_images/`.)
 - Zelditch, M.L., Swiderski, D.L. & Sheets, H.D. (2012) *Geometric Morphometrics for Biologists*, 2nd ed. Academic Press.
