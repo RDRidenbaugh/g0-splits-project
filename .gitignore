@@ -5,13 +5,13 @@ __pycache__/
 *.pyc
 lance_landmarking/model/runs/
 
-# novel_genai_landmarking_protocol: local data and generated files (kept on disk, not versioned)
-novel_genai_landmarking_protocol/Landmarked_Images/
-novel_genai_landmarking_protocol/Raw_Images/
-novel_genai_landmarking_protocol/autolabels/
-novel_genai_landmarking_protocol/analysis/data/
-novel_genai_landmarking_protocol/analysis/output/
-novel_genai_landmarking_protocol/**/*.log
+# genai_lance_landmarking: local data and generated files (kept on disk, not versioned)
+genai_lance_landmarking/Landmarked_Images/
+genai_lance_landmarking/Raw_Images/
+genai_lance_landmarking/autolabels/
+genai_lance_landmarking/analysis/data/
+genai_lance_landmarking/analysis/output/
+genai_lance_landmarking/**/*.log
 # training manifests generated for the protocol comparison
 lance_landmarking/manifest_oldproto_qc.csv
 lance_landmarking/manifest_newproto.csv
