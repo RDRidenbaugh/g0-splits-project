@@ -1,0 +1,1027 @@
+{
+ "protocol": "Neodiprion lance landmarking protocol v1",
+ "views": {
+  "Right": {
+   "n_points": 42,
+   "n_anchors": 17,
+   "n_computed": 1,
+   "n_semilandmarks": 24,
+   "points": [
+    {
+     "id": "R01",
+     "role": "anchor",
+     "type": "II",
+     "definition": "apex",
+     "on_outline": true,
+     "old_protocol_point": 13
+    },
+    {
+     "id": "R02",
+     "role": "anchor",
+     "type": "I",
+     "definition": "heel-ventral junction",
+     "on_outline": true,
+     "old_protocol_point": 3
+    },
+    {
+     "id": "R03",
+     "role": "anchor",
+     "type": "II",
+     "definition": "proximal heel notch",
+     "on_outline": true,
+     "old_protocol_point": 1
+    },
+    {
+     "id": "R04",
+     "role": "anchor",
+     "type": "I",
+     "definition": "suture 1 ventral end",
+     "on_outline": true,
+     "old_protocol_point": 4
+    },
+    {
+     "id": "R05",
+     "role": "anchor",
+     "type": "I",
+     "definition": "suture 2 ventral end",
+     "on_outline": true,
+     "old_protocol_point": 5
+    },
+    {
+     "id": "R06",
+     "role": "anchor",
+     "type": "I",
+     "definition": "suture 3 ventral end",
+     "on_outline": true,
+     "old_protocol_point": 6
+    },
+    {
+     "id": "R07",
+     "role": "anchor",
+     "type": "I",
+     "definition": "suture 4 ventral end",
+     "on_outline": true,
+     "old_protocol_point": 7
+    },
+    {
+     "id": "R08",
+     "role": "anchor",
+     "type": "I",
+     "definition": "suture 5 ventral end",
+     "on_outline": true,
+     "old_protocol_point": 8
+    },
+    {
+     "id": "R09",
+     "role": "anchor",
+     "type": "I",
+     "definition": "suture 6 ventral end",
+     "on_outline": true,
+     "old_protocol_point": 9
+    },
+    {
+     "id": "R10",
+     "role": "anchor",
+     "type": "I",
+     "definition": "suture 7 ventral end",
+     "on_outline": true,
+     "old_protocol_point": 10
+    },
+    {
+     "id": "R11",
+     "role": "anchor",
+     "type": "I",
+     "definition": "window proximal end",
+     "on_outline": false,
+     "old_protocol_point": 14
+    },
+    {
+     "id": "R12",
+     "role": "anchor",
+     "type": "I",
+     "definition": "suture 2 dorsal end",
+     "on_outline": false,
+     "old_protocol_point": 15
+    },
+    {
+     "id": "R13",
+     "role": "anchor",
+     "type": "I",
+     "definition": "suture 3 dorsal end",
+     "on_outline": false,
+     "old_protocol_point": 17
+    },
+    {
+     "id": "R14",
+     "role": "anchor",
+     "type": "I",
+     "definition": "suture 4 dorsal end",
+     "on_outline": false,
+     "old_protocol_point": 19
+    },
+    {
+     "id": "R15",
+     "role": "anchor",
+     "type": "I",
+     "definition": "suture 5 dorsal end",
+     "on_outline": false,
+     "old_protocol_point": 21
+    },
+    {
+     "id": "R16",
+     "role": "anchor",
+     "type": "I",
+     "definition": "suture 6 dorsal end",
+     "on_outline": false,
+     "old_protocol_point": 23
+    },
+    {
+     "id": "R17",
+     "role": "anchor",
+     "type": "I",
+     "definition": "window distal end",
+     "on_outline": false,
+     "old_protocol_point": 25
+    },
+    {
+     "id": "R18",
+     "role": "computed",
+     "type": "III",
+     "definition": "dorsal curve start: dorsal outline on the line through the suture-1 ventral end, perpendicular to the heel-ventral junction -> apex axis"
+    },
+    {
+     "id": "R.heel1",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "R.heel"
+    },
+    {
+     "id": "R.heel2",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "R.heel"
+    },
+    {
+     "id": "R.heel3",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "R.heel"
+    },
+    {
+     "id": "R.heel4",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "R.heel"
+    },
+    {
+     "id": "R.vbase1",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "R.vbase"
+    },
+    {
+     "id": "R.vbase2",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "R.vbase"
+    },
+    {
+     "id": "R.vdist1",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "R.vdist"
+    },
+    {
+     "id": "R.vdist2",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "R.vdist"
+    },
+    {
+     "id": "R.vdist3",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "R.vdist"
+    },
+    {
+     "id": "R.vdist4",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "R.vdist"
+    },
+    {
+     "id": "R.dorsal1",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "R.dorsal"
+    },
+    {
+     "id": "R.dorsal2",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "R.dorsal"
+    },
+    {
+     "id": "R.dorsal3",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "R.dorsal"
+    },
+    {
+     "id": "R.dorsal4",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "R.dorsal"
+    },
+    {
+     "id": "R.dorsal5",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "R.dorsal"
+    },
+    {
+     "id": "R.dorsal6",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "R.dorsal"
+    },
+    {
+     "id": "R.dorsal7",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "R.dorsal"
+    },
+    {
+     "id": "R.dorsal8",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "R.dorsal"
+    },
+    {
+     "id": "R.dorsal9",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "R.dorsal"
+    },
+    {
+     "id": "R.dorsal10",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "R.dorsal"
+    },
+    {
+     "id": "R.window1",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "R.window"
+    },
+    {
+     "id": "R.window2",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "R.window"
+    },
+    {
+     "id": "R.window3",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "R.window"
+    },
+    {
+     "id": "R.window4",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "R.window"
+    }
+   ],
+   "curves": [
+    {
+     "id": "R.heel",
+     "path": "outline",
+     "start": "R03",
+     "end": "R02",
+     "n_semilandmarks": 4,
+     "old_protocol_points_reused": []
+    },
+    {
+     "id": "R.vbase",
+     "path": "outline",
+     "start": "R02",
+     "end": "R04",
+     "n_semilandmarks": 2,
+     "old_protocol_points_reused": []
+    },
+    {
+     "id": "R.vdist",
+     "path": "outline",
+     "start": "R10",
+     "end": "R01",
+     "n_semilandmarks": 4,
+     "old_protocol_points_reused": []
+    },
+    {
+     "id": "R.dorsal",
+     "path": "outline",
+     "start": "R18",
+     "end": "R01",
+     "n_semilandmarks": 10,
+     "old_protocol_points_reused": []
+    },
+    {
+     "id": "R.window",
+     "path": "interior",
+     "start": "R11",
+     "end": "R17",
+     "n_semilandmarks": 4,
+     "old_protocol_points_reused": [
+      16,
+      18,
+      20,
+      22
+     ]
+    }
+   ],
+   "old_points_retired": [
+    2,
+    11,
+    12,
+    24,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36
+   ]
+  },
+  "Left": {
+   "n_points": 40,
+   "n_anchors": 17,
+   "n_computed": 1,
+   "n_semilandmarks": 22,
+   "points": [
+    {
+     "id": "L01",
+     "role": "anchor",
+     "type": "II",
+     "definition": "apex",
+     "on_outline": false,
+     "old_protocol_point": 13
+    },
+    {
+     "id": "L02",
+     "role": "anchor",
+     "type": "I",
+     "definition": "heel-ventral junction",
+     "on_outline": true,
+     "old_protocol_point": 3
+    },
+    {
+     "id": "L03",
+     "role": "anchor",
+     "type": "II",
+     "definition": "proximal heel notch",
+     "on_outline": true,
+     "old_protocol_point": 1
+    },
+    {
+     "id": "L04",
+     "role": "anchor",
+     "type": "I",
+     "definition": "suture 1 ventral end",
+     "on_outline": true,
+     "old_protocol_point": 4
+    },
+    {
+     "id": "L05",
+     "role": "anchor",
+     "type": "I",
+     "definition": "suture 2 ventral end",
+     "on_outline": true,
+     "old_protocol_point": 5
+    },
+    {
+     "id": "L06",
+     "role": "anchor",
+     "type": "I",
+     "definition": "suture 3 ventral end",
+     "on_outline": true,
+     "old_protocol_point": 6
+    },
+    {
+     "id": "L07",
+     "role": "anchor",
+     "type": "I",
+     "definition": "suture 4 ventral end",
+     "on_outline": true,
+     "old_protocol_point": 7
+    },
+    {
+     "id": "L08",
+     "role": "anchor",
+     "type": "I",
+     "definition": "suture 5 ventral end",
+     "on_outline": true,
+     "old_protocol_point": 8
+    },
+    {
+     "id": "L09",
+     "role": "anchor",
+     "type": "I",
+     "definition": "suture 6 ventral end",
+     "on_outline": true,
+     "old_protocol_point": 9
+    },
+    {
+     "id": "L10",
+     "role": "anchor",
+     "type": "II",
+     "definition": "ventral split point",
+     "on_outline": true,
+     "old_protocol_point": 10
+    },
+    {
+     "id": "L11",
+     "role": "anchor",
+     "type": "I",
+     "definition": "window proximal end",
+     "on_outline": false,
+     "old_protocol_point": 14
+    },
+    {
+     "id": "L12",
+     "role": "anchor",
+     "type": "I",
+     "definition": "suture 2 dorsal end",
+     "on_outline": false,
+     "old_protocol_point": 15
+    },
+    {
+     "id": "L13",
+     "role": "anchor",
+     "type": "I",
+     "definition": "suture 3 dorsal end",
+     "on_outline": false,
+     "old_protocol_point": 17
+    },
+    {
+     "id": "L14",
+     "role": "anchor",
+     "type": "I",
+     "definition": "suture 4 dorsal end",
+     "on_outline": false,
+     "old_protocol_point": 19
+    },
+    {
+     "id": "L15",
+     "role": "anchor",
+     "type": "I",
+     "definition": "suture 5 dorsal end",
+     "on_outline": false,
+     "old_protocol_point": 21
+    },
+    {
+     "id": "L16",
+     "role": "anchor",
+     "type": "I",
+     "definition": "suture 6 dorsal end",
+     "on_outline": false,
+     "old_protocol_point": 23
+    },
+    {
+     "id": "L17",
+     "role": "anchor",
+     "type": "I",
+     "definition": "window distal end",
+     "on_outline": false,
+     "old_protocol_point": 24
+    },
+    {
+     "id": "L18",
+     "role": "computed",
+     "type": "III",
+     "definition": "dorsal curve start: dorsal outline on the line through the suture-1 ventral end, perpendicular to the heel-ventral junction -> apex axis"
+    },
+    {
+     "id": "L.heel1",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "L.heel"
+    },
+    {
+     "id": "L.heel2",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "L.heel"
+    },
+    {
+     "id": "L.heel3",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "L.heel"
+    },
+    {
+     "id": "L.heel4",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "L.heel"
+    },
+    {
+     "id": "L.vbase1",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "L.vbase"
+    },
+    {
+     "id": "L.vbase2",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "L.vbase"
+    },
+    {
+     "id": "L.vdist1",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "L.vdist"
+    },
+    {
+     "id": "L.vdist2",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "L.vdist"
+    },
+    {
+     "id": "L.dorsal1",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "L.dorsal"
+    },
+    {
+     "id": "L.dorsal2",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "L.dorsal"
+    },
+    {
+     "id": "L.dorsal3",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "L.dorsal"
+    },
+    {
+     "id": "L.dorsal4",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "L.dorsal"
+    },
+    {
+     "id": "L.dorsal5",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "L.dorsal"
+    },
+    {
+     "id": "L.dorsal6",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "L.dorsal"
+    },
+    {
+     "id": "L.dorsal7",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "L.dorsal"
+    },
+    {
+     "id": "L.dorsal8",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "L.dorsal"
+    },
+    {
+     "id": "L.dorsal9",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "L.dorsal"
+    },
+    {
+     "id": "L.dorsal10",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "L.dorsal"
+    },
+    {
+     "id": "L.window1",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "L.window"
+    },
+    {
+     "id": "L.window2",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "L.window"
+    },
+    {
+     "id": "L.window3",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "L.window"
+    },
+    {
+     "id": "L.window4",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "L.window"
+    }
+   ],
+   "curves": [
+    {
+     "id": "L.heel",
+     "path": "outline",
+     "start": "L03",
+     "end": "L02",
+     "n_semilandmarks": 4,
+     "old_protocol_points_reused": []
+    },
+    {
+     "id": "L.vbase",
+     "path": "outline",
+     "start": "L02",
+     "end": "L04",
+     "n_semilandmarks": 2,
+     "old_protocol_points_reused": []
+    },
+    {
+     "id": "L.vdist",
+     "path": "interior",
+     "start": "L10",
+     "end": "L01",
+     "n_semilandmarks": 2,
+     "old_protocol_points_reused": [
+      11,
+      12
+     ]
+    },
+    {
+     "id": "L.dorsal",
+     "path": "outline",
+     "start": "L18",
+     "end": "L01",
+     "n_semilandmarks": 10,
+     "old_protocol_points_reused": []
+    },
+    {
+     "id": "L.window",
+     "path": "interior",
+     "start": "L11",
+     "end": "L17",
+     "n_semilandmarks": 4,
+     "old_protocol_points_reused": [
+      16,
+      18,
+      20,
+      22
+     ]
+    }
+   ],
+   "old_points_retired": [
+    2,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32
+   ]
+  },
+  "Bottom": {
+   "n_points": 38,
+   "n_anchors": 13,
+   "n_computed": 1,
+   "n_semilandmarks": 24,
+   "points": [
+    {
+     "id": "B01",
+     "role": "anchor",
+     "type": "II",
+     "definition": "long-half apex",
+     "on_outline": true,
+     "old_protocol_point": 1
+    },
+    {
+     "id": "B02",
+     "role": "anchor",
+     "type": "II",
+     "definition": "short-half apex",
+     "on_outline": true,
+     "old_protocol_point": 13
+    },
+    {
+     "id": "B03",
+     "role": "anchor",
+     "type": "I",
+     "definition": "long half, suture 1 from apex, outer end",
+     "on_outline": true,
+     "old_protocol_point": 2
+    },
+    {
+     "id": "B04",
+     "role": "anchor",
+     "type": "I",
+     "definition": "long half, suture 2 from apex, outer end",
+     "on_outline": true,
+     "old_protocol_point": 3
+    },
+    {
+     "id": "B05",
+     "role": "anchor",
+     "type": "I",
+     "definition": "long half, suture 3 from apex, outer end",
+     "on_outline": true,
+     "old_protocol_point": 4
+    },
+    {
+     "id": "B06",
+     "role": "anchor",
+     "type": "I",
+     "definition": "long half, suture 4 from apex, outer end",
+     "on_outline": true,
+     "old_protocol_point": 5
+    },
+    {
+     "id": "B07",
+     "role": "anchor",
+     "type": "I",
+     "definition": "short half, suture 1 from apex, outer end",
+     "on_outline": true,
+     "old_protocol_point": 14
+    },
+    {
+     "id": "B08",
+     "role": "anchor",
+     "type": "I",
+     "definition": "short half, suture 2 from apex, outer end",
+     "on_outline": true,
+     "old_protocol_point": 15
+    },
+    {
+     "id": "B09",
+     "role": "anchor",
+     "type": "I",
+     "definition": "short half, suture 3 from apex, outer end",
+     "on_outline": true,
+     "old_protocol_point": 16
+    },
+    {
+     "id": "B10",
+     "role": "anchor",
+     "type": "I",
+     "definition": "short half, suture 4 from apex, outer end",
+     "on_outline": true,
+     "old_protocol_point": 17
+    },
+    {
+     "id": "B11",
+     "role": "anchor",
+     "type": "II",
+     "definition": "median basal notch: deepest point of the proximal median emargination between the two basal lobes",
+     "on_outline": true,
+     "old_protocol_point": null
+    },
+    {
+     "id": "B12",
+     "role": "anchor",
+     "type": "II",
+     "definition": "long half shoulder: where the outer margin begins to curve outward into the basal lobe -- deepest point of the first concavity (>0.15 shaft widths) proximal to the 4th-from-apex suture, measured from a straight edge laid against the shaft margin and the front of the lobe",
+     "on_outline": true,
+     "old_protocol_point": null
+    },
+    {
+     "id": "B13",
+     "role": "anchor",
+     "type": "II",
+     "definition": "short half shoulder (as B12)",
+     "on_outline": true,
+     "old_protocol_point": null
+    },
+    {
+     "id": "B14",
+     "role": "computed",
+     "type": "III",
+     "definition": "fork crotch"
+    },
+    {
+     "id": "B.medL1",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "B.medL"
+    },
+    {
+     "id": "B.medL2",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "B.medL"
+    },
+    {
+     "id": "B.medL3",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "B.medL"
+    },
+    {
+     "id": "B.medS1",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "B.medS"
+    },
+    {
+     "id": "B.medS2",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "B.medS"
+    },
+    {
+     "id": "B.medS3",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "B.medS"
+    },
+    {
+     "id": "B.outL1",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "B.outL"
+    },
+    {
+     "id": "B.outL2",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "B.outL"
+    },
+    {
+     "id": "B.outL3",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "B.outL"
+    },
+    {
+     "id": "B.outS1",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "B.outS"
+    },
+    {
+     "id": "B.outS2",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "B.outS"
+    },
+    {
+     "id": "B.outS3",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "B.outS"
+    },
+    {
+     "id": "B.sideL1",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "B.sideL"
+    },
+    {
+     "id": "B.sideL2",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "B.sideL"
+    },
+    {
+     "id": "B.sideL3",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "B.sideL"
+    },
+    {
+     "id": "B.sideL4",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "B.sideL"
+    },
+    {
+     "id": "B.sideL5",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "B.sideL"
+    },
+    {
+     "id": "B.sideL6",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "B.sideL"
+    },
+    {
+     "id": "B.sideS1",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "B.sideS"
+    },
+    {
+     "id": "B.sideS2",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "B.sideS"
+    },
+    {
+     "id": "B.sideS3",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "B.sideS"
+    },
+    {
+     "id": "B.sideS4",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "B.sideS"
+    },
+    {
+     "id": "B.sideS5",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "B.sideS"
+    },
+    {
+     "id": "B.sideS6",
+     "role": "semilandmark",
+     "type": "semi",
+     "curve": "B.sideS"
+    }
+   ],
+   "curves": [
+    {
+     "id": "B.medL",
+     "path": "outline",
+     "start": "B14",
+     "end": "B01",
+     "n_semilandmarks": 3,
+     "old_protocol_points_reused": []
+    },
+    {
+     "id": "B.medS",
+     "path": "outline",
+     "start": "B14",
+     "end": "B02",
+     "n_semilandmarks": 3,
+     "old_protocol_points_reused": []
+    },
+    {
+     "id": "B.outL",
+     "path": "outline",
+     "start": "B03",
+     "end": "B01",
+     "n_semilandmarks": 3,
+     "old_protocol_points_reused": []
+    },
+    {
+     "id": "B.outS",
+     "path": "outline",
+     "start": "B07",
+     "end": "B02",
+     "n_semilandmarks": 3,
+     "old_protocol_points_reused": []
+    },
+    {
+     "id": "B.sideL",
+     "path": "outline",
+     "start": "B06",
+     "end": "B12",
+     "n_semilandmarks": 6,
+     "old_protocol_points_reused": []
+    },
+    {
+     "id": "B.sideS",
+     "path": "outline",
+     "start": "B10",
+     "end": "B13",
+     "n_semilandmarks": 6,
+     "old_protocol_points_reused": []
+    }
+   ],
+   "old_points_retired": [
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ]
+  }
+ }
+}
