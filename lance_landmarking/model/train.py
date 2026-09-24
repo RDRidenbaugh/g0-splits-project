@@ -166,7 +166,8 @@ def main():
         n_threads = int(os.environ.get("SLURM_CPUS_PER_TASK", os.environ.get("OMP_NUM_THREADS", os.cpu_count() or 1)))
         torch.set_num_threads(n_threads)
         print(f"CPU training: torch.set_num_threads({n_threads})")
-    model = HeatmapNet(EXPECTED_N[args.angle], pretrained=not args.no_pretrained).to(device)
+    # landmark count comes from the labels (EXPECTED_N for the v2 manifest; other protocols via --manifest)
+    model = HeatmapNet(samples[0].n_expected, pretrained=not args.no_pretrained).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
 
     steps_per_epoch = max(1, len(train_loader))
