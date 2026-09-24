@@ -28,8 +28,8 @@ align <- function(cfg, view, which) {
     gpagen(cfg$A, curves = sl, ProcD = FALSE, print.progress = FALSE)
   } else gpagen(cfg$A, print.progress = FALSE)
 }
-resid_on <- function(Y, lcs, grp) {  # remove size and cross type
-  X <- model.matrix(~ lcs + grp)
+resid_on <- function(Y, lcs, grp) {  # remove size (if given) and cross type
+  X <- if (is.null(lcs)) model.matrix(~ grp) else model.matrix(~ lcs + grp)
   Y - X %*% qr.solve(X, Y)
 }
 icc <- function(R, fam) {
@@ -47,7 +47,7 @@ for (view in c("Right", "Left", "Bottom")) {
     cfg <- read_cfg(view, w); g <- align(cfg, view, w)
     lcs <- log(g$Csize); grp <- factor(cfg$meta$group)
     P[[w]] <- list(shape = resid_on(two.d.array(g$coords), lcs, grp),
-                   size = resid_on(matrix(lcs), rep(0, length(lcs)), grp), meta = cfg$meta)
+                   size = resid_on(matrix(lcs), NULL, grp), meta = cfg$meta)
   }
   stopifnot(identical(P$old$meta$key, P$new$meta$key))
   meta <- P$old$meta

@@ -76,6 +76,8 @@ r2_ok = all(os.path.exists(os.path.join(OUTD, f)) for f in
 r2_snr = read("r2_snr_summary.csv") if r2_ok else None
 r2_diff = read("r2_snr_differences.csv") if r2_ok else None
 r2_unseen = read("r2_common_unseen_dorsal.csv") if r2_ok else None
+sib = read("sibling_family_test.csv") if os.path.exists(os.path.join(OUTD, "sibling_family_test.csv")) else None
+sib_mod = read("sibling_family_modules.csv") if os.path.exists(os.path.join(OUTD, "sibling_family_modules.csv")) else None
 runs_dir = "/home/labradorite/g0-splits-project/lance_landmarking/model/runs/protocol_comparison"
 evals = {}
 for v in ("Right", "Left", "Bottom"):
@@ -227,6 +229,10 @@ bullets([
     "0 after).",
     "**Recommendation:** adopt the new protocol with the lateral dorsal curve starting at the window's proximal "
     "end (R11/L11 level); the new Dorsal-face protocol gives the largest gain.",
+    "**But it has not been shown to detect more biological variation.** In a sibling-family test (Section 4.3) "
+    "the new protocol captured the same family resemblance as the old one where both measure the same anatomy, "
+    "and less overall, because the old protocol's family signal sits in its least reliable points (Dorsal split "
+    "point cluster, heel), which may reflect heritable variation or digitizing-batch effects.",
 ] if snr else []))
 
 
@@ -451,6 +457,35 @@ if snr:
              "model is still closer to the human points (median 4–5 µm vs 6–6.5 µm), which is expected: those human "
              "points are exactly what the old model was trained to reproduce.")
 
+    if sib and sib_mod:
+        doc.add_heading("4.3 Sibling-family test: heritable variation in the backcrosses", level=2)
+        para("If a protocol captures more heritable variation, siblings should resemble each other more under it. "
+             "For backcross individuals in families of three or more (Right 174 in 18 families, Left 162 in 17, "
+             "Dorsal 146 in 15), the share of shape and size variance lying between sibling families was computed "
+             "for each protocol on the same individuals (old = the original human points; new = v1.4 labels), after "
+             "removing size and cross type, with a cluster bootstrap over families.")
+        rows = [[VIEW_NAME[r["view"]], r["measure"], r["individuals"], r["families"], r["icc_old_boot"],
+                 r["icc_new_boot"], r["new_minus_old"]] for r in sib]
+        table(["Face", "Measure", "n", "Families", "Old [95%]", "New [95%]", "New − old [95%]"], rows,
+              [0.6, 0.6, 0.4, 0.6, 1.4, 1.4, 1.5],
+              note="Values are the between-family share of variance (intraclass correlation).")
+        rows = [[VIEW_NAME[r["view"]], r["subset"], r["protocol"], r["family_icc"]] for r in sib_mod]
+        table(["Face", "Region", "Protocol", "Between-family share"], rows, [0.7, 3.0, 0.9, 1.5],
+              note="Each region superimposed on its own.")
+        para("**Result.** The new protocol does not capture more sibling-family variation. Where the two protocols "
+             "measure the same anatomy the same way, they capture the same amount (Dorsal sutures and apices 0.12 "
+             "vs 0.12; Left ventral margin and sutures 0.056 vs 0.056; Left window 0.031 vs 0.034). The old "
+             "protocol's higher whole-configuration values come almost entirely from its Dorsal fork cluster "
+             "(removing the split point alone lowers the Dorsal value from 0.21 to 0.12) and its three heel points "
+             "on the Left face; the new protocol's large Dorsal shaft/shoulder region shows little family "
+             "resemblance (0.04) and dilutes its whole-configuration value.")
+        para("**Interpretation.** The fork-cluster and heel points are the old protocol's least reliable points "
+             "(Section 1 of the protocol document: their placement error runs along the outline). Their family "
+             "resemblance could be real heritable variation that the new definitions miss, or a digitizing-batch "
+             "effect: siblings were probably digitized together, and hand placement of an ambiguous point can "
+             "differ systematically between batches or digitizers. These data cannot separate the two; digitizer "
+             "and digitizing-date records, or a repeat-digitizing study, would.")
+
     doc.add_heading("5. Recommendations", level=1)
     bullets([
         "**Adopt the new Dorsal-face protocol.** It gives clearly more repeatable automated shape and size "
@@ -461,7 +496,13 @@ if snr:
         "(Section 4.2). This is a protocol change (v1.4) for the scheme, the digitizer protocol and the converter.",
         "**Keep the rest of the lateral scheme.** Ventral margin, sutures, window and heel match or exceed the old "
         "protocol in species signal (Section 2.2).",
-        "**Next analyses:** re-run this comparison with the revised lateral scheme; extend predictions to all raw "
+        "**The new protocol has not been shown to detect more biological variation.** It gives more repeatable "
+        "automated measurement on the Dorsal face and parity on the lateral faces, but no gain in group "
+        "separation or sibling-family resemblance (Sections 2 and 4.3). Its main demonstrated advantages are "
+        "measurement quality and robustness under automation, not more biological signal.",
+        "**Next analyses:** find out whether the old heel and fork-cluster family signal is biological (digitizer "
+        "and digitizing-date records, or a small repeat-digitizing study); QTL mapping with both phenotype sets "
+        "as the definitive test; re-run this comparison with the revised lateral scheme; extend predictions to all raw "
         "images (cross-validated, so every specimen is predicted by a model that never saw it); and, if possible, "
         "a small repeat-digitizing set to separate digitizer effects from biology.",
     ])
