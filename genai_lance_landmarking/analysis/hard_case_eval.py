@@ -22,7 +22,7 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, "..")
 D = os.path.join(HERE, "data", "hard")
-LANCE = "/home/labradorite/g0-splits-project/lance_landmarking/"
+LANCE = "/home/labradorite/g0-splits-project/lance_landmarking/cnn/"  # the manifests live here; their image paths are relative to it
 SCHEMA = json.load(open(os.path.join(ROOT, "landmark_schema.json")))
 rng = np.random.default_rng(1)
 

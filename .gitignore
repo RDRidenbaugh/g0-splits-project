@@ -1,18 +1,23 @@
-scripts/.Rhistory
 .Rhistory
 .venv/
 __pycache__/
 *.pyc
-lance_landmarking/model/runs/
+
+# lance_landmarking: CNN run outputs (checkpoints) and local image data
+lance_landmarking/cnn/runs/
+lance_landmarking/marked_images/
+lance_landmarking/raw_images/
+# contains cluster credentials -- never commit
+lance_landmarking/tools/image_scp.sh
+# training manifests generated for the protocol comparison
+lance_landmarking/cnn/manifest_oldproto_qc.csv
+lance_landmarking/cnn/manifest_newproto.csv
+lance_landmarking/cnn/manifest_r2_*.csv
 
 # genai_lance_landmarking: local data and generated files (kept on disk, not versioned)
-genai_lance_landmarking/Landmarked_Images/
-genai_lance_landmarking/Raw_Images/
+genai_lance_landmarking/landmarked_images/
+genai_lance_landmarking/raw_images/
 genai_lance_landmarking/autolabels/
 genai_lance_landmarking/analysis/data/
 genai_lance_landmarking/analysis/output/
 genai_lance_landmarking/**/*.log
-# training manifests generated for the protocol comparison
-lance_landmarking/manifest_oldproto_qc.csv
-lance_landmarking/manifest_newproto.csv
-lance_landmarking/manifest_r2_*.csv

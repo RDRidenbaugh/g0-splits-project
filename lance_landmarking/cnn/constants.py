@@ -46,4 +46,4 @@ HEATMAP_STRIDE = 4        # output heatmap is INPUT_SIZE/HEATMAP_STRIDE per side
 HEATMAP_SIZE = INPUT_SIZE // HEATMAP_STRIDE
 HEATMAP_SIGMA = 2.0       # gaussian sigma, in heatmap-pixel units
 
-MANIFEST_PATH = "manifest.csv"  # relative to lance_landmarking/
+MANIFEST_PATH = "manifest.csv"  # relative to lance_landmarking/cnn/ (this directory)

@@ -29,7 +29,7 @@ sys.path.insert(0, os.path.join(ROOT, "tools"))
 from autolabel import fix_order  # noqa: E402
 from autolabel_qc import dist_to_polyline, DORSAL_OLD  # noqa: E402
 
-LANCE = "/home/labradorite/g0-splits-project/lance_landmarking/"
+LANCE = "/home/labradorite/g0-splits-project/lance_landmarking/cnn/"  # the manifests live here; their image paths are relative to it
 VIEW_NAME = {"Right": "Right", "Left": "Left", "Bottom": "Dorsal"}
 INK, INK2, GRID, BLUE = "#0b0b0b", "#52514e", "#d9d8d4", "#2a78d6"
 
@@ -78,11 +78,11 @@ r2_diff = read("r2_snr_differences.csv") if r2_ok else None
 r2_unseen = read("r2_common_unseen_dorsal.csv") if r2_ok else None
 sib = read("sibling_family_test.csv") if os.path.exists(os.path.join(OUTD, "sibling_family_test.csv")) else None
 sib_mod = read("sibling_family_modules.csv") if os.path.exists(os.path.join(OUTD, "sibling_family_modules.csv")) else None
-runs_dir = "/home/labradorite/g0-splits-project/lance_landmarking/model/runs/protocol_comparison"
+runs_dir = "/home/labradorite/g0-splits-project/lance_landmarking/cnn/runs/protocol_comparison"
 evals = {}
 for v in ("Right", "Left", "Bottom"):
     for pr in ("old", "new"):
-        f = os.path.join(runs_dir, f"{pr}_{v}", "eval_test.json")
+        f = os.path.join(runs_dir, f"{pr}_{v.lower()}", "eval_test.json")
         if os.path.exists(f):
             evals[(v, pr)] = json.load(open(f))
 
@@ -191,7 +191,7 @@ def table(header, rows, widths, note=None):
 
 # ------------------------------------------------------------------ content
 para("Old vs new lance landmarking protocol: findings to date", bold=True, size=16)
-para(f"Generated {date.today().isoformat()} from novel_genai_landmarking_protocol/analysis. "
+para(f"Generated {date.today().isoformat()} from genai_lance_landmarking/analysis. "
      "Protocols: v2 = Lance_Imaging_Morphometrics_v2 (85 points); new = protocol v1.3 "
      "(120 points: 47 anchors, 3 computed points, 70 sliding semilandmarks).", italic=True, size=9)
 
@@ -516,7 +516,7 @@ bullets([
     "analysis/prep_protocol_comparison.py: matched old/new datasets (analysis/data/).",
     "analysis/compare_protocols.R, bootstrap_compare.R, module_old_vs_new.R, module_species.R: the analyses "
     "above (analysis/output/).",
-    "cnn/run_protocol_comparison.sh: the six CNN trainings (lance_landmarking/model/runs/protocol_comparison/); "
+    "cnn/run_protocol_comparison.sh: the six CNN trainings (lance_landmarking/cnn/runs/protocol_comparison/); "
     "analysis/snr_compare.R and snr_ablation_right.R: Section 4.",
     "analysis/make_findings_docx.py: this document.",
 ])

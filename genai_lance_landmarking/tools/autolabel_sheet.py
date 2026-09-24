@@ -8,7 +8,7 @@ from PIL import Image, ImageDraw
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 AL = os.path.join(HERE, "..", "autolabels")
-LANCE = "/home/labradorite/g0-splits-project/lance_landmarking/"
+LANCE = "/home/labradorite/g0-splits-project/lance_landmarking/cnn/"  # the manifests live here; their image paths are relative to it
 SCHEMA = json.load(open(os.path.join(HERE, "..", "landmark_schema.json")))
 
 view, want, n, out = sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4]

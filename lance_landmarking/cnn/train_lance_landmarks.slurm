@@ -48,10 +48,10 @@ module load Miniconda3
 
 # SLURM runs a COPY of this script from its spool dir (/var/spool/slurm/...),
 # so BASH_SOURCE/$0 can't be used to locate the repo. $SLURM_SUBMIT_DIR is
-# the directory sbatch was run from -- submit from lance_landmarking/model/.
+# the directory sbatch was run from -- submit from lance_landmarking/cnn/.
 MODEL_DIR="${SLURM_SUBMIT_DIR:?SLURM_SUBMIT_DIR not set}"
 if [[ ! -f "$MODEL_DIR/train.py" ]]; then
-    echo "ERROR: train.py not found in $MODEL_DIR -- run sbatch from lance_landmarking/model/" >&2
+    echo "ERROR: train.py not found in $MODEL_DIR -- run sbatch from lance_landmarking/cnn/" >&2
     exit 1
 fi
 REPO_ROOT="$(cd "$MODEL_DIR/../.." && pwd)"
@@ -90,12 +90,12 @@ BATCH_SIZE="${BATCH_SIZE:-8}"
 # so all cores go to conv math instead of fighting DataLoader workers over decoding
 NUM_WORKERS="${NUM_WORKERS:-0}"
 # To continue an interrupted run, reuse its directory and set RESUME=1, e.g.:
-#   sbatch --array=1 --export=ALL,RESUME=1,RUN_DIR=runs/Left_36756021,EPOCHS=100 train_lance_landmarks.slurm
-RUN_DIR="${RUN_DIR:-runs/${ANGLE}_${SLURM_ARRAY_JOB_ID}}"
+#   sbatch --array=1 --export=ALL,RESUME=1,RUN_DIR=runs/left_36756021,EPOCHS=100 train_lance_landmarks.slurm
+RUN_DIR="${RUN_DIR:-runs/${ANGLE,,}_${SLURM_ARRAY_JOB_ID}}"  # run folders are lower-case (snake_case)
 RESUME_ARG=()
 [[ -n "${RESUME:-}" ]] && RESUME_ARG=(--resume)
 # Warm start from weights only (for runs made before per-epoch checkpoints existed):
-#   INIT_WEIGHTS=runs/Left_36756021/best.pt
+#   INIT_WEIGHTS=runs/left_36756021/best.pt
 [[ -n "${INIT_WEIGHTS:-}" ]] && RESUME_ARG+=(--init-weights "$INIT_WEIGHTS")
 
 echo "host=$(hostname)  angle=$ANGLE  cpus=$SLURM_CPUS_PER_TASK  epochs=$EPOCHS  batch_size=$BATCH_SIZE  num_workers=$NUM_WORKERS"

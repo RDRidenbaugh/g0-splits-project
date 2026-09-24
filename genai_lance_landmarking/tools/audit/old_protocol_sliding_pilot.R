@@ -1,11 +1,11 @@
 suppressMessages({library(geomorph)})
-base <- "/home/labradorite/g0-splits-project/novel_genai_landmarking_protocol/Landmarked_Images"
+base <- "/home/labradorite/g0-splits-project/genai_lance_landmarking/landmarked_images"
 load_view <- function(v, n){
-  fs <- Sys.glob(file.path(base, "Landmarked_*", "txt", v, "*.txt"))
+  fs <- Sys.glob(file.path(base, "landmarked_*", "txt", tolower(v), "*.txt"))
   L <- lapply(fs, function(f) as.matrix(read.table(f)))
   keep <- sapply(L, nrow) == n
   A <- simplify2array(L[keep]); A[,2,] <- -A[,2,]
-  g <- factor(sub(".*Landmarked_([^/]+)/.*", "\\1", fs[keep]))
+  g <- factor(sub(".*landmarked_([^/]+)/.*", "\\1", fs[keep]))
   list(A=A, g=g)
 }
 curv <- function(chain){ cbind(chain[-c(1,length(chain))]*0+chain[1:(length(chain)-2)], chain[2:(length(chain)-1)], chain[3:length(chain)]) }

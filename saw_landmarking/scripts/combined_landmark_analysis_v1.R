@@ -3,7 +3,7 @@ library(dplyr)
 library(geomorph)
 library(ggplot2)
 
-setwd("//wsl.localhost/Ubuntu/home/labradorite/g0-splits-project")
+setwd("//wsl.localhost/Ubuntu/home/labradorite/g0-splits-project/saw_landmarking")  # data moved into saw_landmarking/ (2026-09-24 reorganization)
 
 # Loading G0 Data set
 g0_all <- read_excel("PRIME_Compiled_G0_PhenoXY_v6.xlsx", na = "NA")

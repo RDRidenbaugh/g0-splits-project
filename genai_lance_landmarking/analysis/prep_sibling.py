@@ -15,11 +15,11 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, "..")
 sys.path.insert(0, os.path.join(ROOT, "tools"))
-sys.path.insert(0, "/home/labradorite/g0-splits-project/lance_landmarking/model")
+sys.path.insert(0, "/home/labradorite/g0-splits-project/lance_landmarking/cnn")
 from autolabel import fix_order, point_order  # noqa: E402
 from splits import family_of  # noqa: E402
 
-LANCE = "/home/labradorite/g0-splits-project/lance_landmarking/"
+LANCE = "/home/labradorite/g0-splits-project/lance_landmarking/cnn/"  # the manifests live here; their image paths are relative to it
 AL = os.path.join(ROOT, "autolabels")
 man = {(r["angle"], r["key"]): r for r in csv.DictReader(open(LANCE + "manifest.csv"))}
 qc = {(r["view"], r["key"]): r["status"] for r in csv.DictReader(open(os.path.join(AL, "qc_final.csv")))}

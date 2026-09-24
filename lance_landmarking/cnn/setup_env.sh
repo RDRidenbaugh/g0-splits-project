@@ -49,7 +49,7 @@ echo "Installing PyTorch (CPU build -- MCC has no GPUs)"
 "$PYTHON" -m pip install --index-url https://download.pytorch.org/whl/cpu torch==2.14.0 torchvision==0.29.0
 
 echo "Installing remaining dependencies"
-"$PYTHON" -m pip install -r "$REPO_ROOT/lance_landmarking/model/requirements.txt"
+"$PYTHON" -m pip install -r "$REPO_ROOT/lance_landmarking/cnn/requirements.txt"
 
 echo "Pre-downloading pretrained ResNet18 weights (needs internet -- do this here, not in the SLURM job)"
 "$PYTHON" -c "

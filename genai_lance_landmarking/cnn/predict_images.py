@@ -11,7 +11,7 @@ Output: key, group, then x1, y1, x2, y2, ... in original-image pixels.
 import argparse, csv, os, sys
 from pathlib import Path
 
-MODEL = "/home/labradorite/g0-splits-project/lance_landmarking/model"
+MODEL = "/home/labradorite/g0-splits-project/lance_landmarking/cnn"
 sys.path.insert(0, MODEL)
 import torch  # noqa: E402
 from torch.utils.data import DataLoader  # noqa: E402

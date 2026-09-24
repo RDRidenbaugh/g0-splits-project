@@ -3,7 +3,7 @@ reporting per-landmark error in both pixels and millimeters (using each
 image's own ImageJ calibration, since that differs by camera session).
 
 Usage:
-    python3 evaluate.py --angle Bottom --checkpoint runs/Bottom/best.pt
+    python3 evaluate.py --angle Bottom --checkpoint runs/bottom/best.pt
 """
 from __future__ import annotations
 
@@ -31,7 +31,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--angle", required=True, choices=list(EXPECTED_N))
     ap.add_argument("--checkpoint", required=True)
-    ap.add_argument("--manifest", default=str(Path(__file__).parent.parent / MANIFEST_PATH))
+    ap.add_argument("--manifest", default=str(Path(__file__).parent / MANIFEST_PATH))
     ap.add_argument("--val-frac", type=float, default=0.15)
     ap.add_argument("--test-frac", type=float, default=0.15)
     ap.add_argument("--seed", type=int, default=42)

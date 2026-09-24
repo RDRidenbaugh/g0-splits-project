@@ -11,7 +11,7 @@ Per image (manifest row with a complete old digitization):
     points, apices, heel points) are an independent check of the automatic
     outline. Their distance to it, and the curve lengths, decide pass/fail.
 
-Writes, under novel_genai_landmarking_protocol/autolabels/:
+Writes, under genai_lance_landmarking/autolabels/:
   labels_<View>.csv  one row per image: key, group, raw_image, then <id>_x, <id>_y (full-res px)
   qc.csv             one row per image and view: status, reason, outline-check distances
 

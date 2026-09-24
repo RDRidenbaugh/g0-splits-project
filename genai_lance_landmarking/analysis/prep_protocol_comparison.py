@@ -1,6 +1,6 @@
 """Old vs new protocol configurations for the same specimens, ready for geomorph.
 
-Inputs: lance_landmarking/manifest.csv (old human digitization, pixels) and
+Inputs: lance_landmarking/cnn/manifest.csv (old human digitization, pixels) and
 autolabels/labels_<View>.csv + autolabels/qc.csv (new protocol).
 Only specimens whose new-protocol labels passed QC are used, for BOTH protocols,
 so the two are compared on identical specimens.
@@ -19,7 +19,7 @@ ROOT = os.path.join(HERE, "..")
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 from autolabel import fix_order  # noqa: E402
 
-LANCE = "/home/labradorite/g0-splits-project/lance_landmarking/"
+LANCE = "/home/labradorite/g0-splits-project/lance_landmarking/cnn/"  # the manifests live here; their image paths are relative to it
 SCHEMA = json.load(open(os.path.join(ROOT, "landmark_schema.json")))
 OUT = os.path.join(HERE, "data")
 

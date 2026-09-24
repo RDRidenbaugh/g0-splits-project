@@ -93,9 +93,9 @@ for (view in c("Right", "Left")) {
 }
 res <- do.call(rbind, rows); dif <- do.call(rbind, diffs)
 # median pixel error from each run's eval_test.json, for reference
-runs <- "/home/labradorite/g0-splits-project/lance_landmarking/model/runs/protocol_comparison_r2"
+runs <- "/home/labradorite/g0-splits-project/lance_landmarking/cnn/runs/protocol_comparison_r2"
 res$median_px_error <- mapply(function(v, p) {
-  f <- file.path(runs, sprintf("%s_%s", p, v), "eval_test.json")
+  f <- file.path(runs, sprintf("%s_%s", p, tolower(v)), "eval_test.json")
   if (file.exists(f)) round(jsonlite::fromJSON(f)$median_px_error, 1) else NA
 }, res$view, res$protocol)
 write.csv(res, "output/r2_snr_summary.csv", row.names = FALSE)

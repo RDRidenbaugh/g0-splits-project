@@ -1,5 +1,5 @@
 suppressMessages(library(geomorph))
-src <- readLines("/home/labradorite/g0-splits-project/novel_genai_landmarking_protocol/tools/audit/old_protocol_sliding_pilot.R")
+src <- readLines("/home/labradorite/g0-splits-project/genai_lance_landmarking/tools/audit/old_protocol_sliding_pilot.R")
 eval(parse(text=src[2:10]))
 d <- load_view("Bottom",17)
 f <- function(keep, lab){ fit <- gpagen(d$A[keep,,], print.progress=FALSE)

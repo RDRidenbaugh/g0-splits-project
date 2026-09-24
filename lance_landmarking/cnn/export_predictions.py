@@ -7,7 +7,7 @@ same individuals, same landmark order, same (original-image) pixel units.
 Only the test split is exported (never seen in training), matching train.py's
 default split (val_frac=0.15, test_frac=0.15, seed=42) unless overridden.
 
-Usage (from lance_landmarking/model/, with the project venv active):
+Usage (from lance_landmarking/cnn/, with the project venv active):
     python3 export_predictions.py --angle Right --checkpoint runs/21ix26_runs/Right_36764579/best.pt
     python3 export_predictions.py --angle Left   --checkpoint runs/21ix26_runs/Left_36764579/best.pt
     python3 export_predictions.py --angle Bottom --checkpoint runs/21ix26_runs/Bottom_36764579/best.pt
@@ -51,7 +51,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--angle", required=True, choices=list(EXPECTED_N))
     ap.add_argument("--checkpoint", required=True)
-    ap.add_argument("--manifest", default=str(Path(__file__).parent.parent / MANIFEST_PATH))
+    ap.add_argument("--manifest", default=str(Path(__file__).parent / MANIFEST_PATH))
     ap.add_argument("--val-frac", type=float, default=0.15)
     ap.add_argument("--test-frac", type=float, default=0.15)
     ap.add_argument("--seed", type=int, default=42)

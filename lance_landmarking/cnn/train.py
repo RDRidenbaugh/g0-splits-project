@@ -1,6 +1,6 @@
 """Train one HeatmapNet for one view (Bottom/Left/Right).
 
-Usage (from lance_landmarking/model/, with the repo venv active):
+Usage (from lance_landmarking/cnn/, with the repo venv active):
     python3 train.py --angle Bottom --epochs 40
 """
 from __future__ import annotations
@@ -104,7 +104,7 @@ def run_epoch(model, loader, optimizer, device, train: bool, fg_weight: float = 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--angle", required=True, choices=list(EXPECTED_N))
-    ap.add_argument("--manifest", default=str(Path(__file__).parent.parent / MANIFEST_PATH))
+    ap.add_argument("--manifest", default=str(Path(__file__).parent / MANIFEST_PATH))
     ap.add_argument("--epochs", type=int, default=40)
     ap.add_argument("--batch-size", type=int, default=8)
     ap.add_argument("--lr", type=float, default=1e-3)
@@ -134,7 +134,7 @@ def main():
     ap.add_argument("--collapse-peak", type=float, default=0.05)
     args = ap.parse_args()
 
-    out_dir = Path(args.out_dir or (Path(__file__).parent / "runs" / args.angle))
+    out_dir = Path(args.out_dir or (Path(__file__).parent / "runs" / args.angle.lower()))
     out_dir.mkdir(parents=True, exist_ok=True)
 
     samples = load_clean_samples(args.manifest, args.angle)
