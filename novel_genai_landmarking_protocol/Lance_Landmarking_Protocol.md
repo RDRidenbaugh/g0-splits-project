@@ -1,6 +1,6 @@
 # A landmark + semilandmark protocol for the *Neodiprion* lance (second valvula), built for deep-learning digitization
 
-*Protocol v1.3, 2026-09-23. v1.3: the dorsal heel junction (old R29/L25) is dropped as inconsistent and noisy; points are renumbered so every view is clicked in one unbroken sequence, with the computed point last (R18, L18, B14). v1.1: the Bottom view covers the whole structure, not only the distal third. v1.2: no Bottom points on the proximal margin, which can be obscured and cannot be cleared on these mounted samples; the basal lobes are anchored at their shoulders instead. Replaces the Lance Morphometrics section of `Lance_Imaging_Morphometrics_v2.docx`; imaging and rehydration steps are unchanged except where noted in §7.*
+*Protocol v1.4, 2026-09-24. v1.4: the lateral dorsal curve starts on the line through the window's proximal end (R11/L11) instead of suture 1, away from the golden basal flap (evidence: analysis/Protocol_Comparison_Findings.docx, Section 4.2). v1.3: the dorsal heel junction (old R29/L25) is dropped as inconsistent and noisy; points are renumbered so every view is clicked in one unbroken sequence, with the computed point last (R18, L18, B14). v1.1: the Bottom view covers the whole structure, not only the distal third. v1.2: no Bottom points on the proximal margin, which can be obscured and cannot be cleared on these mounted samples; the basal lobes are anchored at their shoulders instead. Replaces the Lance Morphometrics section of `Lance_Imaging_Morphometrics_v2.docx`; imaging and rehydration steps are unchanged except where noted in §7.*
 
 Files in this folder:
 
@@ -124,7 +124,7 @@ Orientation and side naming follow the old imaging protocol: **Right** = right-f
 | R11 | I | **Window, proximal end**: most proximal point of the dorsal margin of the cuticular window | 14 |
 | R12–R16 | I | **Dorsal ends of sutures 2–6**: where each suture meets the dorsal margin of the cuticular window | 15, 17, 19, 21, 23 |
 | R17 | I | **Window, distal end**: most distal point of the dorsal margin of the cuticular window | 25 |
-| R18 | III (computed) | **Dorsal curve start**: where the line through R04 (suture 1, ventral end), perpendicular to the lance's own axis R02 → R01, meets the dorsal outline | ≈ 30 |
+| R18 | III (computed) | **Dorsal curve start** (v1.4): moving dorsally from R11 (the window's proximal end) along the line perpendicular to the lance's own axis R02 → R01, the first point where the line reaches the lance's dorsal edge (never the golden basal flap above it) | ≈ 31 |
 
 | Curve | From → to | Semilandmarks | Replaces old |
 |---|---|---|---|
@@ -133,6 +133,8 @@ Orientation and side naming follow the old imaging protocol: **Right** = right-f
 | R.vdist | R10 → R01 along the ventral margin | 4 | 11, 12 |
 | R.dorsal | R18 → R01 along the dorsal outline | 10 | 26–28, 30–36 |
 | R.window | R11 → R12 → … → R16 → R17 along the window's dorsal margin; one semilandmark between each pair of suture ends (the scallop crests) | 4 | 16, 18, 20, 22 |
+
+**Changed in v1.4: where the dorsal curve starts.** In v1.3 the curve started on the line through R04 (suture 1), next to the heel. There the golden basal flap often lies over the dorsal margin, and because the curve's ten semilandmarks are spaced from its start, a start point placed on the flap drags the whole curve off the edge. Moving the start to the line through R11 drops the 17–20% of the curve next to the heel. In a retraining comparison on identical images it gave the best repeatability of the new versions (Right shape repeatability 0.64 vs 0.56 for the suture-1 start and 0.59 for the old protocol) and no dorsal-curve failures on never-seen Left specimens with flaps (0 of 46, against 4 of 46 before the label fix).
 
 **Dropped in v1.3:** old 29, the "intersection of the tongue and groove and the dorsodistal part of the heel" (v1's R02). It is an internal texture junction, not an outline feature. Its visibility varies between specimens, and it sits right at the edge in some and well inside in others. It would be inconsistent and noisy, so the dorsal curve now starts at the computed point R18 instead.
 
@@ -154,7 +156,7 @@ Same definitions as Right, with these differences:
 | L11 | I | Window, proximal end | 14 |
 | L12–L16 | I | Dorsal ends of sutures 2–6 | 15, 17, 19, 21, 23 |
 | L17 | I | Window, distal end | 24 |
-| L18 | III | Dorsal curve start (as R18, through L04) | ≈ 26 |
+| L18 | III | Dorsal curve start (as R18, through L11) | ≈ 27 |
 
 Curves: L.heel (4), L.vbase (2), L.dorsal L18 → L01 (10), L.window (4), and **L.vdist L10 → L01 (2)**. The last one runs along the short half's own distal ventral edge, which is an interior edge because the long half's tip forms the silhouette here (old 11, 12). Old 25 (tongue-and-groove × heel) is dropped, as on Right.
 

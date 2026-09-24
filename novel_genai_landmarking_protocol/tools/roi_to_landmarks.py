@@ -5,9 +5,10 @@ A digitizer produces, per image, one ImageJ ROI Manager set (`SampleID_<V>_ROI.z
      (Right R01-R17, Left L01-L17, Bottom B01-B13);
   2. one Segmented Line ROI per traced curve, in the order listed in CURVES.
 This script trims each trace at its anchors, computes the Type III points
-(R18/L18 dorsal curve start, B14 fork crotch) and resamples the semilandmarks
-at equal arc length, giving the full configuration (Right 42, Left 40,
-Bottom 38 points) with the same point IDs as landmark_schema.json.
+(R18/L18: dorsal curve start, on the dorsal edge straight above the window's
+proximal end; B14: fork crotch) and resamples the semilandmarks at equal arc
+length, giving the full configuration (Right 42, Left 40, Bottom 38 points)
+with the same point IDs as landmark_schema.json (protocol v1.4).
 
 usage:
   python roi_to_landmarks.py <view> <roi.zip> [...]      -> prints QC, writes <roi>_landmarks.csv
@@ -106,10 +107,10 @@ def convert(view, path):
         if name.endswith(".dorsal"):
             s = PREFIX[view]
             ax = (P[f"{s}01"] - P[f"{s}02"]) / np.linalg.norm(P[f"{s}01"] - P[f"{s}02"])
-            along = (tr - P[f"{s}04"]) @ ax
+            along = (tr - P[f"{s}11"]) @ ax  # v1.4: line through the window's proximal end
             cross = np.flatnonzero(np.diff(np.sign(along)) != 0)
             if not len(cross):
-                raise ValueError(f"{name}: trace does not reach back past suture 1 (start it further proximally)")
+                raise ValueError(f"{name}: trace does not reach back past the window's proximal end (start it further proximally)")
             i = cross[0]
             f = along[i] / (along[i] - along[i + 1])
             start = tr[i] + f * (tr[i + 1] - tr[i])

@@ -71,6 +71,11 @@ snr = read("snr_summary.csv") if os.path.exists(snr_path) else None
 snr_diff = read("snr_new_minus_old.csv") if os.path.exists(os.path.join(OUTD, "snr_new_minus_old.csv")) else None
 ablation = read("snr_ablation_right.csv") if os.path.exists(os.path.join(OUTD, "snr_ablation_right.csv")) else None
 hard = read("hard_case_eval.csv") if os.path.exists(os.path.join(OUTD, "hard_case_eval.csv")) else None
+r2_ok = all(os.path.exists(os.path.join(OUTD, f)) for f in
+            ("r2_snr_summary.csv", "r2_snr_differences.csv", "r2_common_unseen_dorsal.csv"))
+r2_snr = read("r2_snr_summary.csv") if r2_ok else None
+r2_diff = read("r2_snr_differences.csv") if r2_ok else None
+r2_unseen = read("r2_common_unseen_dorsal.csv") if r2_ok else None
 runs_dir = "/home/labradorite/g0-splits-project/lance_landmarking/model/runs/protocol_comparison"
 evals = {}
 for v in ("Right", "Left", "Bottom"):
@@ -215,12 +220,13 @@ bullets([
     "**Left face: no difference. Right face: the new protocol is worse, and its dorsal-edge curve accounts for "
     "the gap** (with one outlier image). Without that curve the Right face matches the old protocol "
     f"({ablation[3]['new_minus_old'] if ablation else ''}).",
-    "**Follow-up (Section 4.1):** the Right-face gap was mostly wrong automatic labels (dorsal curve starting on "
-    "the golden basal flap), now fixed. On never-seen difficult specimens, the new dorsal curve fails on ~15% of "
-    "Left images where a flap lies above the dorsal margin; a retraining round with corrected labels and a "
-    "flap-avoiding variant of the curve is under way.",
-    "**Recommendation so far:** adopt the new Dorsal protocol; decide the lateral dorsal curve's start point "
-    "after round 2.",
+    "**Follow-up (Sections 4.1-4.2):** the Right-face gap was mostly wrong automatic labels (dorsal curve starting "
+    "on the golden basal flap). After fixing them and starting the lateral dorsal curve at the window's proximal "
+    "end instead of next to the heel, the new protocol's lateral repeatability equals or slightly exceeds the old "
+    "one on both faces, and it no longer fails on never-seen specimens with flaps (Left: 4 failures of 46 before, "
+    "0 after).",
+    "**Recommendation:** adopt the new protocol with the lateral dorsal curve starting at the window's proximal "
+    "end (R11/L11 level); the new Dorsal-face protocol gives the largest gain.",
 ] if snr else []))
 
 
@@ -399,21 +405,62 @@ if snr:
              "semilandmarks are spaced from that start point, the whole curve was dragged off the edge. Two causes: "
              "the model had learned it from the ~4% of training labels with the same flap error (since fixed), and "
              "the design ties every dorsal point to the start point.")
-        para("**Round 2 (in progress).** Right and Left are being retrained on the corrected labels, for three "
-             "models each on identical images and splits: old protocol; new protocol with the corrected start; and "
-             "new protocol with the dorsal curve starting at the window's proximal end (R11/L11 level), away from "
-             "the heel and flap. The signal-to-noise and never-seen tests will then be repeated.", italic=True)
+        if not r2_ok:
+            para("**Round 2 (in progress).** Right and Left are being retrained on the corrected labels, for three "
+                 "models each on identical images and splits: old protocol; new protocol with the corrected start; "
+                 "and new protocol with the dorsal curve starting at the window's proximal end (R11/L11 level), away "
+                 "from the heel and flap. The signal-to-noise and never-seen tests will then be repeated.", italic=True)
+        else:
+            para("Round 2 (Section 4.2) retrained Right and Left on the corrected labels and tested a start point "
+                 "away from the heel.")
+
+    if r2_ok:
+        doc.add_heading("4.2 Round 2: corrected labels and a flap-avoiding dorsal curve", level=2)
+        para("Right and Left were retrained on the corrected labels (the dorsal-curve start takes the lance's own "
+             "edge, and a height check rejects labels where a flap touches the edge). Three models per face on "
+             "identical images and splits: old protocol; new protocol with the corrected start (R18/L18 on the line "
+             "through suture 1); and new protocol with the start on the line through the window's proximal end "
+             "(R11/L11), which drops the 17–20% of the dorsal curve next to the heel, where the flap sits.")
+        para("**Never-seen specimens.** Round 2's never-seen set is easier than round 1's (the fix moved flap-heavy "
+             "images into training), so rounds are compared only on images that no model in either round saw.")
+        rows = [[VIEW_NAME[r["view"]], r["model"], r["n"], r["median_um"], r["p90_um"], f"{r['gross_n']} ({r['gross_pct']}%)"]
+                for r in r2_unseen]
+        table(["Face", "Model", "n", "Median (µm)", "90th pct (µm)", "Failures >50 µm"], rows,
+              [0.6, 2.4, 0.4, 0.9, 1.0, 1.2],
+              note="Dorsal-edge distance: from the human dorsal-edge points to each model's predicted dorsal edge.")
+        para("**Signal-to-noise on the test specimens (shape).**")
+        rows = []
+        for r in r2_snr:
+            if r["measure"] == "shape":
+                rows.append([VIEW_NAME[r["view"]], "all test" if r["subset"] == "all" else "LBX + PBX", r["protocol"],
+                             r["n"], r["repeatability"], r["snr"]])
+        table(["Face", "Specimens", "Model", "n", "Repeatability [95%]", "Signal/noise [95%]"], rows,
+              [0.6, 0.8, 0.9, 0.4, 1.6, 1.6])
+        rows = [[VIEW_NAME[r["view"]], "all test" if r["subset"] == "all" else "LBX + PBX", r["comparison"],
+                 r["repeatability_difference"], r["share_first_higher"]]
+                for r in r2_diff if r["measure"] == "shape"]
+        table(["Face", "Specimens", "Comparison", "Repeatability difference [95%]", "Share first higher"], rows,
+              [0.6, 0.8, 1.3, 1.9, 1.0],
+              note="Paired bootstrap over specimens (1000 resamples). Size (log centroid size) repeatability did not "
+                   "differ between the three models on either face (all differences within ±0.03).")
+        para("**Result.** The label fix removed the Left-face failures on never-seen specimens (4 → 0 of 46). Moving "
+             "the dorsal-curve start to the window's proximal end improved both faces further: it is the best new "
+             "version on every measure here, significantly better than the corrected suture-1 start on the Right "
+             "face (repeatability +0.07 overall, +0.10 in the backcrosses), and equal to or slightly better than the "
+             "old protocol in repeatability on both faces (differences not significant). On the dorsal edge the old "
+             "model is still closer to the human points (median 4–5 µm vs 6–6.5 µm), which is expected: those human "
+             "points are exactly what the old model was trained to reproduce.")
 
     doc.add_heading("5. Recommendations", level=1)
     bullets([
         "**Adopt the new Dorsal-face protocol.** It gives clearly more repeatable automated shape and size "
         "measurement, especially in the backcrosses, and adds the shaft and shoulders.",
-        "**Decide the lateral dorsal curve's start point after round 2** (Section 4.1). The curve carries species "
-        "signal (Section 2.2), but starting it next to the heel makes it vulnerable to the golden basal flap on "
-        "both lateral faces. Round 2 compares the current start with one at the window's proximal end.",
+        "**Start the lateral dorsal curve at the window's proximal end** (R18/L18 on the line through R11/L11, "
+        "perpendicular to the heel-ventral junction -> apex axis), instead of next to the heel. It avoids the golden "
+        "basal flap, gives the best repeatability of the new versions, and removes failures on never-seen specimens "
+        "(Section 4.2). This is a protocol change (v1.4) for the scheme, the digitizer protocol and the converter.",
         "**Keep the rest of the lateral scheme.** Ventral margin, sutures, window and heel match or exceed the old "
-        "protocol in species signal, and without the Right dorsal curve the lateral faces match the old "
-        "protocol's repeatability.",
+        "protocol in species signal (Section 2.2).",
         "**Next analyses:** re-run this comparison with the revised lateral scheme; extend predictions to all raw "
         "images (cross-validated, so every specimen is predicted by a model that never saw it); and, if possible, "
         "a small repeat-digitizing set to separate digitizer effects from biology.",

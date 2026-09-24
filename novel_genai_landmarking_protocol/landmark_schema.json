@@ -147,7 +147,7 @@
      "id": "R18",
      "role": "computed",
      "type": "III",
-     "definition": "dorsal curve start: dorsal outline on the line through the suture-1 ventral end, perpendicular to the heel-ventral junction -> apex axis"
+     "definition": "dorsal curve start: first point where the line through the window's proximal end, perpendicular to the heel-ventral junction -> apex axis, reaches the lance's dorsal edge (not the basal flap above it)"
     },
     {
      "id": "R.heel1",
@@ -505,7 +505,7 @@
      "id": "L18",
      "role": "computed",
      "type": "III",
-     "definition": "dorsal curve start: dorsal outline on the line through the suture-1 ventral end, perpendicular to the heel-ventral junction -> apex axis"
+     "definition": "dorsal curve start: first point where the line through the window's proximal end, perpendicular to the heel-ventral junction -> apex axis, reaches the lance's dorsal edge (not the basal flap above it)"
     },
     {
      "id": "L.heel1",

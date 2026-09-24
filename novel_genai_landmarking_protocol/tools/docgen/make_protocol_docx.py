@@ -1,6 +1,6 @@
 """Generates novel_genai_landmarking_protocol/Lance_Imaging_Morphometrics_v3.docx.
 
-The human-executable version of Lance_Landmarking_Protocol.md (v1.3), laid out
+The human-executable version of Lance_Landmarking_Protocol.md (v1.4), laid out
 like Lance_Imaging_Morphometrics_v2.docx (rehydration and imaging steps are
 carried over from v2 unchanged; the morphometrics section is new). Rerun this
 after any protocol change rather than hand-editing the .docx.
@@ -190,7 +190,7 @@ def old_image(name):
 # ------------------------------------------------------------------ title
 para("Lance Imaging & Morphometrics v3", bold=True, size=14)
 para(f"Landmark + semilandmark protocol. Generated {date.today().isoformat()} from "
-     "Lance_Landmarking_Protocol.md (protocol v1.3). Rehydration and imaging are unchanged from v2; "
+     "Lance_Landmarking_Protocol.md (protocol v1.4). Rehydration and imaging are unchanged from v2; "
      "Lance Morphometrics is new and replaces the v2 multipoint landmarking.", italic=True, size=10)
 
 # ------------------------------------------------------------------ rehydration (from v2)
@@ -385,9 +385,10 @@ table(["Order", "Name", "Trace", "Points"], [
     (1, "R.heel", "From R03 down the proximal (back) edge of the heel to R02.", 4),
     (2, "R.vbase", "From R02 along the ventral edge to R04.", 2),
     (3, "R.vdist", "From R10 along the ventral edge to the apex R01.", 4),
-    (4, "R.dorsal", "From the top of the heel, anywhere behind the point directly above R04, along the upper "
-                    "(dorsal) edge to R01. The software starts the curve at R18, the point on this edge straight "
-                    "above R04.", 10),
+    (4, "R.dorsal", "From anywhere behind the point directly above R11 (the window's proximal end), along the "
+                    "upper (dorsal) edge of the lance to R01. The software starts the curve at R18, the point on this "
+                    "edge straight above R11. Stay on the lance's own edge: never trace onto the golden basal flap "
+                    "that can lie above it near the heel.", 10),
     (5, "R.window", "From R11 along the upper edge of the pale window to R17, passing through R12–R16 and following "
                     "the scalloped edge between them.", 4),
 ], [0.6, 0.9, 4.3, 0.7])
@@ -405,8 +406,9 @@ table(["Order", "Name", "Trace", "Points"], [
     (2, "L.vbase", "From L02 along the ventral edge to L04.", 2),
     (3, "L.vdist", "From L10 along the **short half's own** ventral edge to L01. This edge runs inside the "
                    "outline; the long half's tip forms the outline here.", 2),
-    (4, "L.dorsal", "From the top of the heel, behind the point directly above L04, along the dorsal edge to L01. "
-                    "The software starts the curve at L18.", 10),
+    (4, "L.dorsal", "From anywhere behind the point directly above L11 (the window's proximal end), along the "
+                    "dorsal edge of the lance to L01. The software starts the curve at L18, straight above L11. Stay "
+                    "on the lance's own edge, never on the golden basal flap.", 10),
     (5, "L.window", "From L11 along the upper edge of the pale window to L17, through L12–L16.", 4),
 ], [0.6, 0.9, 4.3, 0.7])
 para("Count every visible suture on the short half and write the number in sutures_visible.")
