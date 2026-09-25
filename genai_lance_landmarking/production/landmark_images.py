@@ -14,6 +14,10 @@ population and new images are phenotyped the same way.
 
 QC flags written per image (the image is still exported; step 2 decides):
   spread      the 5 models disagree: mean distance to their mean > 3x the view's median
+              (only informative for ensemble images: 4 of 5 models saw an out-of-fold image)
+  label_gap   an out-of-fold prediction is far from the image's own v1.4 label
+              (> 2x the typical held-out error). Either the CNN or the label is wrong:
+              look at the overlay, which draws both
   order       sutures / window ends out of order along the lance's axis
   outside     a point off the image
   shape       Procrustes distance to the view's mean shape is a robust outlier (z > 4)
@@ -22,7 +26,8 @@ QC flags written per image (the image is still exported; step 2 decides):
 
 Outputs in --out-dir:
   predictions_px_<View>.csv   ID, key, view, group, image, width, height, px_per_mm,
-                              session, source, spread_px, flags, x1, y1, ... (image pixels)
+                              session, source, spread_px, label_gap_um, procrustes_d, flags,
+                              x1, y1, ... (image pixels)
   unparsed_images.txt         files whose name gives no view
   overlays/<View>/<key>.jpg   points drawn on the image (--overlays flagged|all|none)
 
@@ -58,6 +63,9 @@ ORDER = {
     "Left": [[f"L{i:02d}" for i in range(4, 11)], [f"L{i:02d}" for i in range(11, 18)]],
     "Bottom": [["B06", "B05", "B04", "B03"], ["B10", "B09", "B08", "B07"]],
 }
+# label_gap: 2x the median held-out error of the production models (2026-09 MCC run 36849347:
+# Right 10.5, Left 10.6, Bottom 13.6 um); flags about 5% of labelled images
+LABEL_GAP_UM = {"Right": 21.0, "Left": 21.0, "Bottom": 27.0}
 AXIS = {"Right": ("R02", "R01"), "Left": ("L02", "L01"), "Bottom": ("B11", ("B01", "B02"))}
 
 
@@ -85,9 +93,11 @@ class Images(Dataset):
                 "hw": torch.tensor(img.shape[:2])}
 
 
-def trained_keys(view):
-    """Keys whose labels trained the production models (every one is in exactly one held-out fold)."""
-    return {r["key"] for r in csv.DictReader(open(HERE / "manifest_v14.csv")) if r["angle"] == view}
+def trained_labels(view):
+    """key -> v1.4 label (px) for the images that trained the production models
+    (every one is in exactly one held-out fold)."""
+    return {r["key"]: np.array(json.loads(r["landmarks_px_json"]))
+            for r in csv.DictReader(open(HERE / "manifest_v14.csv")) if r["angle"] == view}
 
 
 def load_models(view, runs):
@@ -152,19 +162,32 @@ def robust_z(v):
     return (v - med) / mad
 
 
-def draw_overlay(row, P, view, path):
+def draw_overlay(row, P, view, path, label=None):
+    """Prediction on the image, cropped to the specimen. Anchors red (with IDs), computed point
+    blue, semilandmarks yellow; if the image has a v1.4 label, it is drawn in cyan with a white
+    line from each labelled point to its prediction."""
     from PIL import Image, ImageDraw
     img = Image.fromarray(load_rgb(str(row["path"])))
-    s = 1200 / max(img.size)
+    pts = P if label is None else np.vstack([P, label])
+    x0, y0 = np.maximum(pts.min(0) - 150, 0)
+    x1, y1 = np.minimum(pts.max(0) + 150, [img.width, img.height])
+    img = img.crop((int(x0), int(y0), int(x1), int(y1)))
+    s = 1400 / max(img.size)
     img = img.resize((round(img.width * s), round(img.height * s)))
     d = ImageDraw.Draw(img)
-    for p, q in zip(SCHEMA["views"][view]["points"], P * s):
+    to = lambda q: (q - [x0, y0]) * s  # noqa: E731
+    if label is not None:
+        for a, b in zip(to(label), to(P)):
+            d.line([tuple(a), tuple(b)], fill=(255, 255, 255), width=1)
+            d.ellipse([a[0] - 4, a[1] - 4, a[0] + 4, a[1] + 4], outline=(0, 230, 255), width=2)
+    for p, q in zip(SCHEMA["views"][view]["points"], to(P)):
         col = {"anchor": (255, 40, 40), "computed": (40, 140, 255)}.get(p["role"], (255, 220, 0))
         r = 4 if p["role"] != "semilandmark" else 3
         d.ellipse([q[0] - r, q[1] - r, q[0] + r, q[1] + r], outline=col, width=2)
         if p["role"] != "semilandmark":
             d.text((q[0] + 5, q[1] - 12), p["id"], fill=col)
-    d.text((8, 8), f"{row['key']}  {row['source']}  {row['flags'] or 'ok'}", fill=(255, 255, 255))
+    gap = f"  label gap {row['label_gap_um']} um (cyan = label)" if label is not None else ""
+    d.text((8, 8), f"{row['key']}  {row['source']}  {row['flags'] or 'ok'}{gap}", fill=(255, 255, 0))
     path.parent.mkdir(parents=True, exist_ok=True)
     img.save(path, quality=85)
 
@@ -204,7 +227,7 @@ def main():
         if not vrows or not models:
             print(f"{view}: {len(vrows)} images, {len(models)} models -- skipped")
             continue
-        trained = trained_keys(view)
+        trained = trained_labels(view)
         ix = point_index(view)
         n = len(ix)
         preds = np.zeros((len(vrows), n, 2))
@@ -236,6 +259,12 @@ def main():
         med_spread = max(0.5, np.median(spread[ens]) if ens.any() else np.median(spread))
         for i, r in enumerate(vrows):
             f = []
+            ppm = a.px_per_mm or PX_PER_MM.get(r["width"])
+            gap = ""
+            if r["key"] in trained and ppm:  # held-out prediction vs the image's own label, mean over points
+                gap = np.linalg.norm(preds[i] - trained[r["key"]], axis=1).mean() / ppm * 1000
+                if gap > LABEL_GAP_UM[view]:
+                    f.append("label_gap")
             if r["source"] == "in_sample":
                 f.append("in_sample")
             if spread[i] > 3 * med_spread:
@@ -247,13 +276,13 @@ def main():
                 f.append("outside")
             if zs[i] > 4:
                 f.append("shape")
-            ppm = a.px_per_mm or PX_PER_MM.get(r["width"])
             if not ppm:
                 f.append("no_scale")
             r.update(px_per_mm=ppm or "", session=f"cam{r['width']}", spread_px=round(spread[i], 2),
+                     label_gap_um=round(gap, 1) if gap != "" else "",
                      flags=";".join(f), procrustes_d=round(pd[i], 5))
         cols = ["ID", "key", "view", "group", "image", "width", "height", "px_per_mm", "session", "source",
-                "spread_px", "procrustes_d", "flags"]
+                "spread_px", "label_gap_um", "procrustes_d", "flags"]
         with open(out / f"predictions_px_{view}.csv", "w", newline="") as fh:
             w = csv.writer(fh)
             w.writerow(cols + [f"{c}{i + 1}" for i in range(n) for c in "xy"])
@@ -267,7 +296,8 @@ def main():
         if a.overlays != "none":
             for i, r in enumerate(vrows):
                 if a.overlays == "all" or r["flags"]:
-                    draw_overlay(r, preds[i], view, out / "overlays" / view / f"{r['key']}.jpg")
+                    draw_overlay(r, preds[i], view, out / "overlays" / view / f"{r['key']}.jpg",
+                                 trained.get(r["key"]))
 
 
 if __name__ == "__main__":
