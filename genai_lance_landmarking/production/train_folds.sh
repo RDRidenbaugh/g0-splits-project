@@ -4,7 +4,7 @@
 # (DSNT, cosine decay, 40 epochs, batch 8). Finished models are skipped, so rerunning resumes.
 #   runs/v14/<view>_f<k>/best.pt, split_keys.json, eval_test.json, run.log
 # usage: bash train_folds.sh [parallel_jobs=3] [threads_per_job=3] [epochs=40]
-# MCC alternative: lance_landmarking/cnn/train_v14_folds.slurm (same outputs).
+# Local fallback; production training runs on MCC: lance_landmarking/cnn/train_v14_folds.slurm (same outputs).
 set -u
 P=${1:-3}; T=${2:-3}; E=${3:-40}
 MODEL=/home/labradorite/g0-splits-project/lance_landmarking/cnn

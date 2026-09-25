@@ -1,32 +1,27 @@
 #!/bin/bash
-# SLURM job array for MCC: the 15 production models for protocol v1.4
-# (3 views x 5 cross-fitting folds), each trained and then evaluated on its
-# held-out fold. Local equivalent: genai_lance_landmarking/production/train_folds.sh.
-# Outputs: runs/v14/<view>_f<k>/{best.pt,split_keys.json,eval_test.json}
+# SLURM job for MCC: landmark images with the 15 production v1.4 models and
+# export geomorph-ready coordinates (landmark_images.py + export_geomorph.py).
+# Same environment as train_v14_folds.slurm. Submit from lance_landmarking/cnn/.
 #
-# Setup is the same as train_lance_landmarks.slurm (scratch space, setup_env.sh,
-# mkdir -p logs, account line). manifest_v14.csv and folds_v14.json must be here,
-# and raw_images/ must sit beside cnn/ (the manifest's paths are relative).
-#
-# Submit from lance_landmarking/cnn/:   sbatch train_v14_folds.slurm
-# then landmark everything once all 15 finish:
-#   sbatch --dependency=afterok:<array job id> landmark_v14.slurm
-# Only some models, e.g. Bottom folds:  sbatch --array=10-14 train_v14_folds.slurm
-# Task id -> view/fold: 0-4 Right f0-f4, 5-9 Left f0-f4, 10-14 Bottom f0-f4.
+# Whole mapping population, after training:
+#   sbatch --dependency=afterok:<train array job id> landmark_v14.slurm
+# A batch of new images (view read from the file names), into its own output folder:
+#   sbatch --export=ALL,IMAGES=/scratch/.../new_batch,GROUP=PBX,OUT=/scratch/.../new_batch_out landmark_v14.slurm
+# Outputs: <OUT>/predictions_px_<View>.csv, overlays/ (flagged images), geomorph/
 
-#SBATCH --job-name=lance-v14
-#SBATCH --array=0-14
+#SBATCH --job-name=lance-v14-predict
 #SBATCH --partition=normal            # MCC's documented partitions are "normal" and "jumbo" (jumbo = the 2 large-memory/4TB nodes -- not needed here)
 #SBATCH --account=coa_cli242_uksr     # EDIT: required by MCC (-A); your project/allocation code
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=32            # out of 128/node -- raise if you have the node to yourself and want faster epochs, but be considerate on a shared cluster
 #SBATCH --mem=64G                     # node has 512GB; the dataset + a few DataLoader workers' worth of decoded TIFFs is well under this
-#SBATCH --time=12:00:00               # a 40-epoch DSNT run took 2.5-3.2 h at 32 CPUs (job 36764579)
+#SBATCH --time=06:00:00               # ~1000 TIFFs x 5 models; decoding dominates
 #SBATCH --mail-user=rdri228@uky.edu
 #SBATCH --mail-type=ALL
-#SBATCH --output=logs/%x_%A_%a.out
-#SBATCH --error=logs/%x_%A_%a.err
+#SBATCH --output=logs/%x_%j.out
+#SBATCH --error=logs/%x_%j.err
+
 
 set -euo pipefail
 
@@ -66,36 +61,25 @@ export PYTHONUNBUFFERED=1   # stdout to a file is block-buffered otherwise: epoc
 export OMP_NUM_THREADS="$SLURM_CPUS_PER_TASK"
 export MKL_NUM_THREADS="$SLURM_CPUS_PER_TASK"
 
-VIEWS=(Right Left Bottom)
-ANGLE="${VIEWS[$((SLURM_ARRAY_TASK_ID / 5))]}"
-FOLD=$((SLURM_ARRAY_TASK_ID % 5))
-EPOCHS="${EPOCHS:-40}"
-RUN_DIR="runs/v14/${ANGLE,,}_f${FOLD}"
-mkdir -p "$RUN_DIR"
-RESUME_ARG=()
-[[ -f "$RUN_DIR/last.pt" ]] && RESUME_ARG=(--resume)
+# The production models must all exist (runs/v14/<view>_f<k>/best.pt); a missing
+# model would leave its held-out images predicted in-sample (flagged in_sample).
+missing=0
+for v in right left bottom; do for k in 0 1 2 3 4; do
+  [[ -f runs/v14/${v}_f${k}/best.pt ]] || { echo "missing runs/v14/${v}_f${k}/best.pt" >&2; missing=1; }
+done; done
+(( missing )) && exit 1
 
-echo "host=$(hostname)  angle=$ANGLE  fold=$FOLD  cpus=$SLURM_CPUS_PER_TASK  epochs=$EPOCHS"
+PROD="$REPO_ROOT/genai_lance_landmarking/production"
+OUT="${OUT:-$PROD/output}"
+# IMAGES: space-separated folders/files; default = the whole mapping population
+IMAGES="${IMAGES:-$REPO_ROOT/lance_landmarking/raw_images}"
+EXTRA_ARGS=()
+[[ -n "${GROUP:-}" ]] && EXTRA_ARGS+=(--group "$GROUP")
+[[ -n "${PX_PER_MM:-}" ]] && EXTRA_ARGS+=(--px-per-mm "$PX_PER_MM")
 
-"$PYTHON" train.py \
-    --angle "$ANGLE" \
-    --manifest manifest_v14.csv \
-    --folds folds_v14.json --fold "$FOLD" \
-    --epochs "$EPOCHS" \
-    --batch-size 8 \
-    --num-workers 0 \
-    --cache-images \
-    --loss dsnt \
-    --lr-decay cosine \
-    --out-dir "$RUN_DIR" \
-    ${RESUME_ARG[@]+"${RESUME_ARG[@]}"}
-
-"$PYTHON" evaluate.py \
-    --angle "$ANGLE" \
-    --manifest manifest_v14.csv \
-    --folds folds_v14.json --fold "$FOLD" \
-    --checkpoint "$RUN_DIR/best.pt" \
-    --loss dsnt \
-    --out "$RUN_DIR/eval_test.json"
-
-echo "Done: $ANGLE fold $FOLD -> $RUN_DIR"
+echo "host=$(hostname)  cpus=$SLURM_CPUS_PER_TASK  images=$IMAGES  out=$OUT"
+# shellcheck disable=SC2086  # IMAGES is deliberately word-split
+"$PYTHON" "$PROD/landmark_images.py" $IMAGES --out-dir "$OUT" --workers 4 \
+    ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"}
+"$PYTHON" "$PROD/export_geomorph.py" --pred-dir "$OUT"
+echo "Done -> $OUT/geomorph (copy it back and run lance_v14_morphometrics.R)"
