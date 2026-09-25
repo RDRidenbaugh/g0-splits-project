@@ -94,3 +94,23 @@ def split_samples(samples: list[Sample], val_frac=0.15, test_frac=0.15, seed=42)
             bucket = val if fam in val_families else test if fam in test_families else train
             bucket.extend(families[fam])
     return train, val, test
+
+
+def fold_split(samples: list[Sample], folds: dict, fold: int, val_frac=0.15, seed=42):
+    """Cross-fitting split: test = the families assigned to `fold` in `folds`
+    (family -> fold number); val = val_frac of the remaining families in each
+    group; train = the rest. Families missing from `folds` go to train/val."""
+    rng = random.Random(seed + fold)
+    test = [s for s in samples if folds.get(s.family) == fold]
+    by_group_family = defaultdict(lambda: defaultdict(list))
+    for s in samples:
+        if folds.get(s.family) != fold:
+            by_group_family[s.group][s.family].append(s)
+    train, val = [], []
+    for group, families in by_group_family.items():
+        family_ids = sorted(families)
+        rng.shuffle(family_ids)
+        n_val = max(1, round(len(family_ids) * val_frac)) if len(family_ids) >= 3 else 0
+        for i, fam in enumerate(family_ids):
+            (val if i < n_val else train).extend(families[fam])
+    return train, val, test
