@@ -21,12 +21,16 @@ QC flags written per image (the image is still exported; step 2 decides):
   order       sutures / window ends out of order along the lance's axis
   outside     a point off the image
   shape       Procrustes distance to the view's mean shape is a robust outlier (z > 4)
-  no_scale    image width has no known calibration and no --px-per-mm was given
+  no_scale    no calibration: no --px-per-mm, no NIS-Elements tag, unknown image width
+  scale_bar   the burned-in red scale bar is not a round length (10 um ... 5 mm, within 1.5%)
+              under the calibration used: wrong calibration or changed zoom
+  no_bar      no red scale bar found
   in_sample   a trained image whose held-out model is missing (all models saw it)
 
 Outputs in --out-dir:
   predictions_px_<View>.csv   ID, key, view, group, image, width, height, px_per_mm,
-                              session, source, spread_px, label_gap_um, procrustes_d, flags,
+                              session, source, cal_source, scale_bar_um, spread_px,
+                              label_gap_um, procrustes_d, flags,
                               x1, y1, ... (image pixels)
   unparsed_images.txt         files whose name gives no view
   overlays/<View>/<key>.jpg   points drawn on the image (--overlays flagged|all|none)
@@ -55,7 +59,14 @@ SCHEMA = json.load(open(HERE.parent / "landmark_schema.json"))
 VIEWS = {"R": "Right", "L": "Left", "B": "Bottom"}
 NAME_RE = re.compile(r"^(?P<id>.+?)[_ ]+(?P<view>[RLB])(?P<frame>\d*)$", re.I)
 # ImageJ calibration of the two imaging sessions (read from the marked TIFFs; one per camera)
-PX_PER_MM = {3840: 927.0, 2560: 1260.0}
+# Calibration, in order: --px-per-mm; the per-image calibration that Nikon NIS-Elements writes
+# into its TIFFs (tag 65326, um/px; the 2560x1920 DS-Fi2-U3 images at SMZ zoom 3.00x: 1321.9
+# px/mm, matching their 200 um scale bar = 264 px); else by image width. The 3840x2160 files
+# carry no calibration; their 1 mm scale bar is 926-929 px, matching ImageJ's 927.
+# (The ImageJ calibration of the 2560 images, 1260 px/mm, is ~5% low: it disagrees with both.)
+PX_PER_MM = {3840: 927.0, 2560: 1321.9}
+NIS_UM_PER_PX_TAG = 65326
+NICE_BAR_UM = np.array([10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 5000])
 GROUP_DIRS = {"lbx": "LBX", "pbx": "PBX", "f1": "F1", "parents": "Parents", "non_laying_parents": "Non_Laying_Parents"}
 # (view, sequence that must run proximal -> distal along the lance's axis)
 ORDER = {
@@ -77,6 +88,26 @@ def find_images(paths):
     return out
 
 
+def nis_px_per_mm(path):
+    """px/mm from the calibration NIS-Elements stores in the TIFF, or None."""
+    import tifffile
+    with tifffile.TiffFile(str(path)) as t:
+        tag = t.pages[0].tags.get(NIS_UM_PER_PX_TAG)
+        return 1000.0 / tag.value if tag and isinstance(tag.value, float) and tag.value > 0 else None
+
+
+def scale_bar_px(img):
+    """Length (px) of the longest horizontal run of pure red: the burned-in scale bar; 0 if none."""
+    red = (img[..., 0] > 180) & (img[..., 1] < 80) & (img[..., 2] < 80)
+    best = 0
+    for y in np.where(red.sum(1) > 50)[0]:
+        xs = np.flatnonzero(red[y])
+        breaks = np.flatnonzero(np.diff(xs) > 1)
+        runs = np.diff(np.concatenate([[-1], breaks, [len(xs) - 1]]))
+        best = max(best, int(runs.max()))
+    return best
+
+
 class Images(Dataset):
     def __init__(self, rows):
         self.rows = rows
@@ -90,7 +121,8 @@ class Images(Dataset):
         x = (canvas.astype(np.float32) / 255.0 - IMAGENET_MEAN) / IMAGENET_STD
         return {"image": torch.from_numpy(np.ascontiguousarray(x.transpose(2, 0, 1))), "i": i,
                 "scale": scale, "pad": torch.tensor([px, py], dtype=torch.float32),
-                "hw": torch.tensor(img.shape[:2])}
+                "hw": torch.tensor(img.shape[:2]), "bar": scale_bar_px(img),
+                "nis": nis_px_per_mm(self.rows[i]["path"]) or 0.0}
 
 
 def trained_labels(view):
@@ -243,6 +275,7 @@ def main():
                 for j, i in enumerate(b["i"].tolist()):
                     r = vrows[i]
                     r["height"], r["width"] = b["hw"][j].tolist()
+                    r["bar"], r["nis"] = int(b["bar"][j]), float(b["nis"][j])
                     mean = allp[:, j].mean(0)
                     spread[i] = np.linalg.norm(allp[:, j] - mean, axis=-1).mean()
                     if r["key"] in test_keys:
@@ -259,7 +292,21 @@ def main():
         med_spread = max(0.5, np.median(spread[ens]) if ens.any() else np.median(spread))
         for i, r in enumerate(vrows):
             f = []
-            ppm = a.px_per_mm or PX_PER_MM.get(r["width"])
+            if a.px_per_mm:
+                ppm, r["cal_source"] = a.px_per_mm, "argument"
+            elif r["nis"]:
+                ppm, r["cal_source"] = round(r["nis"], 2), "nis_tiff"
+            else:
+                ppm = PX_PER_MM.get(r["width"])
+                r["cal_source"] = "image_width" if ppm else ""
+            r["scale_bar_um"] = ""
+            if ppm and r["bar"]:  # the burned-in bar must be a round length under this calibration
+                bar_um = r["bar"] / ppm * 1000
+                r["scale_bar_um"] = round(bar_um, 1)
+                if np.min(np.abs(NICE_BAR_UM / bar_um - 1)) > 0.015:
+                    f.append("scale_bar")
+            elif not r["bar"]:
+                f.append("no_bar")
             gap = ""
             if r["key"] in trained and ppm:  # held-out prediction vs the image's own label, mean over points
                 gap = np.linalg.norm(preds[i] - trained[r["key"]], axis=1).mean() / ppm * 1000
@@ -282,7 +329,7 @@ def main():
                      label_gap_um=round(gap, 1) if gap != "" else "",
                      flags=";".join(f), procrustes_d=round(pd[i], 5))
         cols = ["ID", "key", "view", "group", "image", "width", "height", "px_per_mm", "session", "source",
-                "spread_px", "label_gap_um", "procrustes_d", "flags"]
+                "cal_source", "scale_bar_um", "spread_px", "label_gap_um", "procrustes_d", "flags"]
         with open(out / f"predictions_px_{view}.csv", "w", newline="") as fh:
             w = csv.writer(fh)
             w.writerow(cols + [f"{c}{i + 1}" for i in range(n) for c in "xy"])

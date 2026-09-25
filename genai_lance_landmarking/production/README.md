@@ -41,9 +41,9 @@ sbatch --export=ALL,IMAGES=/scratch/.../batch3,GROUP=PBX,OUT=/scratch/.../batch3
 
 | View | Images | Mean | Median | 90th percentile |
 |---|---|---|---|---|
-| Right | 273 | 11.4 µm | 10.5 µm | 16.4 µm |
-| Left | 265 | 11.8 µm | 10.6 µm | 16.3 µm |
-| Bottom | 238 | 15.9 µm | 13.6 µm | 26.1 µm |
+| Right | 273 | 11.3 µm | 10.4 µm | 16.0 µm |
+| Left | 265 | 11.7 µm | 10.5 µm | 16.3 µm |
+| Bottom | 238 | 15.7 µm | 13.5 µm | 25.3 µm |
 
 These errors are measured against the automatic labels. The largest are on the heel (R02/R03, L02/L03) and at the Bottom shoulders (B12/B13).
 
@@ -59,7 +59,14 @@ Rscript lance_v14_morphometrics.R                          # -> output/geomorph/
 
 **No image is predicted by a model that trained on it.** An image whose label was used in training gets the model for which it was held out (source `oof_f<k>`). Every other image gets the mean of the five models (source `ensemble`). This covers images that failed label QC, images never digitized, and new images. The whole population is therefore phenotyped the same way.
 
-**Calibration** is set by image width: 3840 px = 927 px/mm and 2560 px = 1260 px/mm, matching the two cameras' ImageJ calibrations. Pass `--px-per-mm` for a new camera.
+**Calibration** is read per image, in this order:
+1. `--px-per-mm`, if given.
+2. The calibration NIS-Elements writes into its TIFFs. The 2560×1920 images were taken on a Nikon DS-Fi2-U3 on the SMZ at 3.00× zoom and read 1321.9 px/mm; their 200 µm bar is 264 px.
+3. Otherwise, the image width. The 3840×2160 files carry no calibration; their 1 mm bar is 926–929 px, so 927 px/mm.
+
+The ImageJ calibration stored in the marked 2560×1920 TIFFs, 1260 px/mm, is about 5% low: it disagrees with both the NIS value and the scale bar. It is not used.
+
+Every image's red scale bar is also measured. It must come out a round length (10 µm to 5 mm, within 1.5%) under the calibration used; otherwise the image is flagged `scale_bar`, or `no_bar` if no bar is found. This catches a changed zoom or a wrong calibration in new batches.
 
 **QC flags:**
 
@@ -71,6 +78,8 @@ Rscript lance_v14_morphometrics.R                          # -> output/geomorph/
 | `outside` | A point falls outside the image |
 | `shape` | The individual is a Procrustes outlier |
 | `no_scale` | No calibration was found |
+| `scale_bar` | The burned-in scale bar is not a round length under the calibration used |
+| `no_bar` | No red scale bar was found |
 | `in_sample` | The model that should have held this image out is missing |
 
 Flagged images get an overlay in `output/overlays/<View>/`. To override a flag, add a row to `qc_review.csv` with `view,key,decision,note`, where `decision` is `keep` or `drop`. Then rerun `export_geomorph.py`.
