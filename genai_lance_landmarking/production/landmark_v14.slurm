@@ -1,7 +1,7 @@
 #!/bin/bash
 # SLURM job for MCC: landmark images with the 15 production v1.4 models and
 # export geomorph-ready coordinates (landmark_images.py + export_geomorph.py).
-# Same environment as train_v14_folds.slurm. Submit from lance_landmarking/cnn/.
+# Same environment as train_v14_folds.slurm. Submit from genai_lance_landmarking/production/.
 #
 # Whole mapping population, after training:
 #   sbatch --dependency=afterok:<train array job id> landmark_v14.slurm
@@ -29,16 +29,18 @@ module load Miniconda3
 
 # SLURM runs a COPY of this script from its spool dir (/var/spool/slurm/...),
 # so BASH_SOURCE/$0 can't be used to locate the repo. $SLURM_SUBMIT_DIR is
-# the directory sbatch was run from -- submit from lance_landmarking/cnn/.
-MODEL_DIR="${SLURM_SUBMIT_DIR:?SLURM_SUBMIT_DIR not set}"
-if [[ ! -f "$MODEL_DIR/train.py" ]]; then
-    echo "ERROR: train.py not found in $MODEL_DIR -- run sbatch from lance_landmarking/cnn/" >&2
+# the directory sbatch was run from -- submit from genai_lance_landmarking/production/.
+PROD="${SLURM_SUBMIT_DIR:?SLURM_SUBMIT_DIR not set}"
+if [[ ! -f "$PROD/manifest_v14.csv" ]]; then
+    echo "ERROR: manifest_v14.csv not found in $PROD -- run sbatch from genai_lance_landmarking/production/" >&2
     exit 1
 fi
-REPO_ROOT="$(cd "$MODEL_DIR/../.." && pwd)"
+# training/model code is shared with the old protocol; data, runs and logs stay in $PROD
+MODEL_DIR="$(cd "$PROD/../../lance_landmarking/cnn" && pwd)"
+REPO_ROOT="$(cd "$PROD/../.." && pwd)"
 ENV_DIR="$REPO_ROOT/.condaenv"           # created by setup_env.sh
 source activate "$ENV_DIR"
-cd "$MODEL_DIR"
+cd "$PROD"
 
 # sbatch passes the SUBMITTING shell's environment to the job. If that shell
 # already had this env active, `source activate` above can be a no-op and the
@@ -69,10 +71,9 @@ for v in right left bottom; do for k in 0 1 2 3 4; do
 done; done
 (( missing )) && exit 1
 
-PROD="$REPO_ROOT/genai_lance_landmarking/production"
 OUT="${OUT:-$PROD/output}"
 # IMAGES: space-separated folders/files; default = the whole mapping population
-IMAGES="${IMAGES:-$REPO_ROOT/lance_landmarking/raw_images}"
+IMAGES="${IMAGES:-$REPO_ROOT/genai_lance_landmarking/raw_images}"
 EXTRA_ARGS=()
 [[ -n "${GROUP:-}" ]] && EXTRA_ARGS+=(--group "$GROUP")
 [[ -n "${PX_PER_MM:-}" ]] && EXTRA_ARGS+=(--px-per-mm "$PX_PER_MM")

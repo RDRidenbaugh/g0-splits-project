@@ -2,13 +2,14 @@
 # SLURM job array for MCC: the 15 production models for protocol v1.4
 # (3 views x 5 cross-fitting folds), each trained and then evaluated on its
 # held-out fold. Local equivalent: genai_lance_landmarking/production/train_folds.sh.
-# Outputs: runs/v14/<view>_f<k>/{best.pt,split_keys.json,eval_test.json}
+# Outputs: genai_lance_landmarking/production/runs/v14/<view>_f<k>/{best.pt,split_keys.json,eval_test.json}
 #
-# Setup is the same as train_lance_landmarks.slurm (scratch space, setup_env.sh,
-# mkdir -p logs, account line). manifest_v14.csv and folds_v14.json must be here,
-# and raw_images/ must sit beside cnn/ (the manifest's paths are relative).
+# Setup is the same as lance_landmarking/cnn/train_lance_landmarks.slurm (scratch space,
+# setup_env.sh -> .condaenv at the repo root, account line); run `mkdir -p logs` here first.
+# Images come from genai_lance_landmarking/raw_images/ (manifest_v14.csv paths are
+# relative to this folder). Runs and logs are written here, apart from the old protocol's.
 #
-# Submit from lance_landmarking/cnn/:   sbatch train_v14_folds.slurm
+# Submit from genai_lance_landmarking/production/:   sbatch train_v14_folds.slurm
 # then landmark everything once all 15 finish:
 #   sbatch --dependency=afterok:<array job id> landmark_v14.slurm
 # Only some models, e.g. Bottom folds:  sbatch --array=10-14 train_v14_folds.slurm
@@ -34,16 +35,18 @@ module load Miniconda3
 
 # SLURM runs a COPY of this script from its spool dir (/var/spool/slurm/...),
 # so BASH_SOURCE/$0 can't be used to locate the repo. $SLURM_SUBMIT_DIR is
-# the directory sbatch was run from -- submit from lance_landmarking/cnn/.
-MODEL_DIR="${SLURM_SUBMIT_DIR:?SLURM_SUBMIT_DIR not set}"
-if [[ ! -f "$MODEL_DIR/train.py" ]]; then
-    echo "ERROR: train.py not found in $MODEL_DIR -- run sbatch from lance_landmarking/cnn/" >&2
+# the directory sbatch was run from -- submit from genai_lance_landmarking/production/.
+PROD="${SLURM_SUBMIT_DIR:?SLURM_SUBMIT_DIR not set}"
+if [[ ! -f "$PROD/manifest_v14.csv" ]]; then
+    echo "ERROR: manifest_v14.csv not found in $PROD -- run sbatch from genai_lance_landmarking/production/" >&2
     exit 1
 fi
-REPO_ROOT="$(cd "$MODEL_DIR/../.." && pwd)"
+# training/model code is shared with the old protocol; data, runs and logs stay in $PROD
+MODEL_DIR="$(cd "$PROD/../../lance_landmarking/cnn" && pwd)"
+REPO_ROOT="$(cd "$PROD/../.." && pwd)"
 ENV_DIR="$REPO_ROOT/.condaenv"           # created by setup_env.sh
 source activate "$ENV_DIR"
-cd "$MODEL_DIR"
+cd "$PROD"
 
 # sbatch passes the SUBMITTING shell's environment to the job. If that shell
 # already had this env active, `source activate` above can be a no-op and the
@@ -77,7 +80,7 @@ RESUME_ARG=()
 
 echo "host=$(hostname)  angle=$ANGLE  fold=$FOLD  cpus=$SLURM_CPUS_PER_TASK  epochs=$EPOCHS"
 
-"$PYTHON" train.py \
+"$PYTHON" "$MODEL_DIR/train.py" \
     --angle "$ANGLE" \
     --manifest manifest_v14.csv \
     --folds folds_v14.json --fold "$FOLD" \
@@ -90,7 +93,7 @@ echo "host=$(hostname)  angle=$ANGLE  fold=$FOLD  cpus=$SLURM_CPUS_PER_TASK  epo
     --out-dir "$RUN_DIR" \
     ${RESUME_ARG[@]+"${RESUME_ARG[@]}"}
 
-"$PYTHON" evaluate.py \
+"$PYTHON" "$MODEL_DIR/evaluate.py" \
     --angle "$ANGLE" \
     --manifest manifest_v14.csv \
     --folds folds_v14.json --fold "$FOLD" \

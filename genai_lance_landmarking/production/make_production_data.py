@@ -1,6 +1,7 @@
 """Training data for the production (protocol v1.4) landmark models.
 
-Writes, next to lance_landmarking/cnn/manifest.csv:
+Writes, in this folder (genai_lance_landmarking/production/), with image paths relative to it
+(../raw_images, ../landmarked_images: the genai copies of the images):
   manifest_v14.csv   v1.4 points (Right 42, Left 40, Bottom 38) for every image whose
                      automatic label passed QC (autolabels/qc_final.csv). Right/Left use the
                      v1.4 distal dorsal start (labels_<View>_distal.csv).
@@ -41,13 +42,18 @@ def main():
             labels[(v, r["key"])] = [[round(float(r[f"{i}_x"]), 2), round(float(r[f"{i}_y"]), 2)] for i in ids]
 
     rows = list(csv.DictReader(open(os.path.join(CNN, "manifest.csv"))))
+    # re-point the image paths from lance_landmarking/cnn/ to this folder: "../raw_images/<group>/..."
+    # already resolves to genai_lance_landmarking/raw_images; the marked images are ../landmarked_images
+    for r in rows:
+        for c in ("marked_tiff", "txt"):
+            r[c] = r[c].replace("../marked_images/", "../landmarked_images/")
     out = []
     for r in rows:
         k = (r["angle"], r["key"])
         if k in passed and k in labels:
             out.append(dict(r, landmarks_px_json=json.dumps(labels[k]), landmark_source="autolabel_v1.4",
                             n_expected=len(labels[k]), n_found=len(labels[k])))
-    with open(os.path.join(CNN, "manifest_v14.csv"), "w", newline="") as fh:
+    with open(os.path.join(HERE, "manifest_v14.csv"), "w", newline="") as fh:
         w = csv.DictWriter(fh, list(rows[0].keys()))
         w.writeheader()
         w.writerows(out)
@@ -73,7 +79,7 @@ def main():
             folds[f] = k
             in_group[k] += fams[g][f]
             total[k] += fams[g][f]
-    json.dump(folds, open(os.path.join(CNN, "folds_v14.json"), "w"), indent=0, sort_keys=True)
+    json.dump(folds, open(os.path.join(HERE, "folds_v14.json"), "w"), indent=0, sort_keys=True)
 
     n = defaultdict(lambda: [0] * a.folds)
     for r in out:

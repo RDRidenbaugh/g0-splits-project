@@ -23,3 +23,5 @@ genai_lance_landmarking/analysis/output/
 genai_lance_landmarking/**/*.log
 genai_lance_landmarking/production/output/
 genai_lance_landmarking/production/*.log
+genai_lance_landmarking/production/runs/
+genai_lance_landmarking/production/logs/

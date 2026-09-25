@@ -27,7 +27,7 @@ Outputs in --out-dir:
   overlays/<View>/<key>.jpg   points drawn on the image (--overlays flagged|all|none)
 
 usage: python landmark_images.py [paths ...] [--out-dir DIR] [--group GROUP] [--px-per-mm N]
-  default paths: lance_landmarking/raw_images (the whole mapping population)
+  default paths: genai_lance_landmarking/raw_images (the whole mapping population)
 Next: python export_geomorph.py --pred-dir DIR
 """
 import argparse, csv, json, os, re, sys
@@ -37,7 +37,7 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parent.parent
-CNN = REPO / "lance_landmarking" / "cnn"
+CNN = REPO / "lance_landmarking" / "cnn"  # shared training/model code only
 sys.path.insert(0, str(CNN))
 import torch  # noqa: E402
 from torch.utils.data import DataLoader, Dataset  # noqa: E402
@@ -69,15 +69,6 @@ def find_images(paths):
     return out
 
 
-def manifest_index():
-    """raw image path -> (key, group) for images already in the digitized manifest."""
-    idx = {}
-    for r in csv.DictReader(open(CNN / "manifest.csv")):
-        if r["raw_image"]:
-            idx[(CNN / r["raw_image"]).resolve()] = (r["key"], r["group"])
-    return idx
-
-
 class Images(Dataset):
     def __init__(self, rows):
         self.rows = rows
@@ -96,7 +87,7 @@ class Images(Dataset):
 
 def trained_keys(view):
     """Keys whose labels trained the production models (every one is in exactly one held-out fold)."""
-    return {r["key"] for r in csv.DictReader(open(CNN / "manifest_v14.csv")) if r["angle"] == view}
+    return {r["key"] for r in csv.DictReader(open(HERE / "manifest_v14.csv")) if r["angle"] == view}
 
 
 def load_models(view, runs):
@@ -180,9 +171,9 @@ def draw_overlay(row, P, view, path):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("paths", nargs="*", default=[str(REPO / "lance_landmarking" / "raw_images")])
+    ap.add_argument("paths", nargs="*", default=[str(HERE.parent / "raw_images")])
     ap.add_argument("--out-dir", default=str(HERE / "output"))
-    ap.add_argument("--runs", default=str(CNN / "runs" / "v14"), help="folder holding <view>_f<k>/best.pt")
+    ap.add_argument("--runs", default=str(HERE / "runs" / "v14"), help="folder holding <view>_f<k>/best.pt")
     ap.add_argument("--group", help="cross type for images not in the manifest (default: from the folder name)")
     ap.add_argument("--px-per-mm", type=float, help="calibration for all images (default: by image width)")
     ap.add_argument("--overlays", choices=["flagged", "all", "none"], default="flagged")
@@ -194,15 +185,14 @@ def main():
     out = Path(a.out_dir)
     out.mkdir(parents=True, exist_ok=True)
 
-    idx = manifest_index()
     rows, unparsed = [], []
     for f in find_images(a.paths):
         m = NAME_RE.match(f.stem.strip())
         if not m:
             unparsed.append(str(f))
             continue
-        key, group = idx.get(f, (re.sub(r"\s+", "", f.stem).lower(), None))
-        group = group or a.group or GROUP_DIRS.get(f.parent.name.lower(), f.parent.name)
+        key = re.sub(r"\s+", "", f.stem).lower()  # same key as the training manifest
+        group = a.group or GROUP_DIRS.get(f.parent.name.lower(), f.parent.name)
         rows.append(dict(path=f, ID=m["id"].strip(), key=key, view=VIEWS[m["view"].upper()], group=group))
     (out / "unparsed_images.txt").write_text("".join(u + "\n" for u in unparsed))
     print(f"{len(rows)} images ({len(unparsed)} without a view in the name: unparsed_images.txt)")
