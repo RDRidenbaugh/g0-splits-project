@@ -24,7 +24,7 @@ from constants import EXPECTED_N, HEATMAP_STRIDE, MANIFEST_PATH
 from dataset import LanceLandmarkDataset
 from heatmap import dsnt_expectation
 from model import HeatmapNet
-from splits import load_clean_samples, split_samples
+from splits import fold_split, load_clean_samples, split_samples
 
 
 def heatmap_loss(pred: torch.Tensor, target: torch.Tensor, valid: torch.Tensor, fg_weight: float = 0.0) -> torch.Tensor:
@@ -111,6 +111,9 @@ def main():
     ap.add_argument("--val-frac", type=float, default=0.15)
     ap.add_argument("--test-frac", type=float, default=0.15)
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--folds", default=None,
+                    help="cross-fitting: JSON {family: fold}; test = --fold's families, val drawn from the rest")
+    ap.add_argument("--fold", type=int, default=None)
     ap.add_argument("--no-pretrained", action="store_true")
     ap.add_argument("--num-workers", type=int, default=2)
     ap.add_argument("--out-dir", default=None)
@@ -140,7 +143,11 @@ def main():
     samples = load_clean_samples(args.manifest, args.angle)
     if args.limit:
         samples = samples[: args.limit]
-    train_s, val_s, test_s = split_samples(samples, args.val_frac, args.test_frac, args.seed)
+    if args.folds:
+        folds = json.load(open(args.folds))
+        train_s, val_s, test_s = fold_split(samples, folds, args.fold, args.val_frac, args.seed)
+    else:
+        train_s, val_s, test_s = split_samples(samples, args.val_frac, args.test_frac, args.seed)
     print(f"[{args.angle}] samples: train={len(train_s)} val={len(val_s)} test={len(test_s)}")
     with open(out_dir / "split_keys.json", "w") as f:
         json.dump(

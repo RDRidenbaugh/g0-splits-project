@@ -21,3 +21,5 @@ genai_lance_landmarking/autolabels/
 genai_lance_landmarking/analysis/data/
 genai_lance_landmarking/analysis/output/
 genai_lance_landmarking/**/*.log
+genai_lance_landmarking/production/output/
+genai_lance_landmarking/production/*.log

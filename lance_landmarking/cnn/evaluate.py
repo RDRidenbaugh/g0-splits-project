@@ -24,7 +24,7 @@ from constants import EXPECTED_N, HEATMAP_STRIDE, MANIFEST_PATH
 from dataset import LanceLandmarkDataset
 from heatmap import dsnt_expectation, soft_argmax_decode
 from model import HeatmapNet
-from splits import load_clean_samples, split_samples
+from splits import fold_split, load_clean_samples, split_samples
 
 
 def main():
@@ -35,6 +35,8 @@ def main():
     ap.add_argument("--val-frac", type=float, default=0.15)
     ap.add_argument("--test-frac", type=float, default=0.15)
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--folds", default=None, help="cross-fitting: JSON {family: fold}; evaluate on --fold's families")
+    ap.add_argument("--fold", type=int, default=None)
     ap.add_argument("--batch-size", type=int, default=8)
     ap.add_argument("--loss", choices=["mse", "dsnt"], default="mse",
                     help="how the checkpoint was trained; dsnt decodes with the soft-argmax expectation instead of the peak window")
@@ -42,7 +44,10 @@ def main():
     args = ap.parse_args()
 
     samples = load_clean_samples(args.manifest, args.angle)
-    _train_s, _val_s, test_s = split_samples(samples, args.val_frac, args.test_frac, args.seed)
+    if args.folds:
+        _train_s, _val_s, test_s = fold_split(samples, json.load(open(args.folds)), args.fold, args.val_frac, args.seed)
+    else:
+        _train_s, _val_s, test_s = split_samples(samples, args.val_frac, args.test_frac, args.seed)
     print(f"[{args.angle}] test samples: {len(test_s)}")
     if not test_s:
         print("No test samples -- nothing to evaluate.")
