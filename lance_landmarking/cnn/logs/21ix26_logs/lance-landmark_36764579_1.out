@@ -1,0 +1,57 @@
+python: /scratch/rdri228/g0-splits-project/.condaenv/bin/python3  (Python 3.12.14)
+host=rome038  angle=Left  cpus=32  epochs=40  batch_size=8  num_workers=0
+[Left] samples: train=228 val=38 test=52
+CPU training: torch.set_num_threads(32)
+epoch   1/40  train_loss=0.55682  val_loss=0.46169  val_mse=0.000000  val_peak=24.664  val_err_px=18.74  lr=9.99e-04  (337.0s)
+epoch   2/40  train_loss=0.25914  val_loss=0.20802  val_mse=0.000000  val_peak=14.938  val_err_px=8.15  lr=9.94e-04  (307.2s)
+epoch   3/40  train_loss=0.11564  val_loss=0.10805  val_mse=0.000000  val_peak=15.913  val_err_px=5.07  lr=9.87e-04  (344.1s)
+epoch   4/40  train_loss=0.06943  val_loss=0.07805  val_mse=0.000000  val_peak=16.241  val_err_px=4.12  lr=9.76e-04  (341.6s)
+epoch   5/40  train_loss=0.06102  val_loss=0.06326  val_mse=0.000000  val_peak=14.848  val_err_px=3.21  lr=9.63e-04  (358.0s)
+epoch   6/40  train_loss=0.05392  val_loss=0.06119  val_mse=0.000000  val_peak=16.112  val_err_px=3.60  lr=9.47e-04  (339.6s)
+epoch   7/40  train_loss=0.05785  val_loss=0.07457  val_mse=0.000000  val_peak=15.876  val_err_px=5.36  lr=9.28e-04  (336.8s)
+epoch   8/40  train_loss=0.04442  val_loss=0.05197  val_mse=0.000000  val_peak=15.799  val_err_px=3.08  lr=9.06e-04  (326.5s)
+epoch   9/40  train_loss=0.04013  val_loss=0.04093  val_mse=0.000000  val_peak=16.244  val_err_px=2.53  lr=8.82e-04  (325.7s)
+epoch  10/40  train_loss=0.03386  val_loss=0.03642  val_mse=0.000000  val_peak=15.459  val_err_px=2.42  lr=8.56e-04  (335.8s)
+epoch  11/40  train_loss=0.02945  val_loss=0.03130  val_mse=0.000000  val_peak=16.559  val_err_px=2.15  lr=8.27e-04  (326.3s)
+epoch  12/40  train_loss=0.03025  val_loss=0.03653  val_mse=0.000000  val_peak=16.449  val_err_px=2.58  lr=7.97e-04  (316.9s)
+epoch  13/40  train_loss=0.03179  val_loss=0.03631  val_mse=0.000000  val_peak=16.883  val_err_px=2.57  lr=7.65e-04  (333.6s)
+epoch  14/40  train_loss=0.02803  val_loss=0.03286  val_mse=0.000000  val_peak=17.318  val_err_px=2.39  lr=7.31e-04  (349.4s)
+epoch  15/40  train_loss=0.02683  val_loss=0.02999  val_mse=0.000000  val_peak=16.663  val_err_px=2.17  lr=6.96e-04  (339.6s)
+epoch  16/40  train_loss=0.02379  val_loss=0.02734  val_mse=0.000000  val_peak=17.206  val_err_px=2.10  lr=6.59e-04  (336.9s)
+epoch  17/40  train_loss=0.02595  val_loss=0.03188  val_mse=0.000000  val_peak=17.097  val_err_px=2.37  lr=6.22e-04  (310.0s)
+epoch  18/40  train_loss=0.02266  val_loss=0.02538  val_mse=0.000000  val_peak=17.136  val_err_px=2.06  lr=5.84e-04  (333.8s)
+epoch  19/40  train_loss=0.02011  val_loss=0.03357  val_mse=0.000000  val_peak=17.296  val_err_px=2.51  lr=5.45e-04  (305.7s)
+epoch  20/40  train_loss=0.01969  val_loss=0.02616  val_mse=0.000000  val_peak=17.286  val_err_px=2.12  lr=5.06e-04  (252.4s)
+epoch  21/40  train_loss=0.01794  val_loss=0.02486  val_mse=0.000000  val_peak=16.712  val_err_px=2.01  lr=4.67e-04  (255.6s)
+epoch  22/40  train_loss=0.01656  val_loss=0.02339  val_mse=0.000000  val_peak=16.797  val_err_px=1.95  lr=4.29e-04  (299.8s)
+epoch  23/40  train_loss=0.01719  val_loss=0.02303  val_mse=0.000000  val_peak=16.449  val_err_px=1.89  lr=3.91e-04  (274.9s)
+epoch  24/40  train_loss=0.01618  val_loss=0.02534  val_mse=0.000000  val_peak=17.746  val_err_px=2.06  lr=3.53e-04  (250.7s)
+epoch  25/40  train_loss=0.01497  val_loss=0.02205  val_mse=0.000000  val_peak=17.283  val_err_px=1.87  lr=3.17e-04  (280.5s)
+epoch  26/40  train_loss=0.01465  val_loss=0.02180  val_mse=0.000000  val_peak=16.870  val_err_px=1.86  lr=2.81e-04  (279.4s)
+epoch  27/40  train_loss=0.01433  val_loss=0.02193  val_mse=0.000000  val_peak=17.410  val_err_px=1.89  lr=2.48e-04  (221.4s)
+epoch  28/40  train_loss=0.01342  val_loss=0.02093  val_mse=0.000000  val_peak=17.378  val_err_px=1.84  lr=2.15e-04  (295.8s)
+epoch  29/40  train_loss=0.01320  val_loss=0.02083  val_mse=0.000000  val_peak=17.522  val_err_px=1.81  lr=1.85e-04  (270.3s)
+epoch  30/40  train_loss=0.01268  val_loss=0.02018  val_mse=0.000000  val_peak=16.900  val_err_px=1.78  lr=1.56e-04  (308.5s)
+epoch  31/40  train_loss=0.01193  val_loss=0.01978  val_mse=0.000000  val_peak=17.122  val_err_px=1.74  lr=1.29e-04  (293.5s)
+epoch  32/40  train_loss=0.01233  val_loss=0.01966  val_mse=0.000000  val_peak=17.032  val_err_px=1.74  lr=1.05e-04  (261.3s)
+epoch  33/40  train_loss=0.01126  val_loss=0.01965  val_mse=0.000000  val_peak=17.400  val_err_px=1.75  lr=8.36e-05  (304.2s)
+epoch  34/40  train_loss=0.01088  val_loss=0.01960  val_mse=0.000000  val_peak=17.762  val_err_px=1.74  lr=6.46e-05  (266.2s)
+epoch  35/40  train_loss=0.01100  val_loss=0.01959  val_mse=0.000000  val_peak=17.435  val_err_px=1.74  lr=4.82e-05  (268.1s)
+epoch  36/40  train_loss=0.01119  val_loss=0.01966  val_mse=0.000000  val_peak=17.068  val_err_px=1.75  lr=3.46e-05  (179.9s)
+epoch  37/40  train_loss=0.01082  val_loss=0.01946  val_mse=0.000000  val_peak=17.198  val_err_px=1.74  lr=2.40e-05  (204.3s)
+epoch  38/40  train_loss=0.01071  val_loss=0.01944  val_mse=0.000000  val_peak=17.691  val_err_px=1.74  lr=1.63e-05  (169.1s)
+epoch  39/40  train_loss=0.01066  val_loss=0.01927  val_mse=0.000000  val_peak=17.440  val_err_px=1.73  lr=1.16e-05  (211.1s)
+epoch  40/40  train_loss=0.01083  val_loss=0.01929  val_mse=0.000000  val_peak=17.501  val_err_px=1.73  lr=1.00e-05  (203.1s)
+Saved checkpoints + history + loss curve to runs/Left_36764579
+[Left] test samples: 52
+{
+  "angle": "Left",
+  "n_test_images": 52,
+  "n_landmark_observations": 1664,
+  "mean_px_error": 11.832710840999006,
+  "median_px_error": 9.663990497589111,
+  "mean_mm_error": 0.012201577290090323,
+  "median_mm_error": 0.01016800457605652
+}
+Wrote full evaluation to runs/Left_36764579/eval_test.json
+Done: Left -> runs/Left_36764579

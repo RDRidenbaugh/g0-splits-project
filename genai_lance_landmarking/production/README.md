@@ -8,18 +8,20 @@ There are 15 CNNs: 3 views × 5 cross-fitting folds. They are trained on the v1.
 
 Folds are assigned by family and balanced within each cross type, so siblings never sit on both sides of a train/test split.
 
-Training runs on MCC, with the same environment as the earlier runs (`lance_landmarking/cnn/setup_env.sh`, `.condaenv` beside the repo on scratch).
+Everything for v1.4 lives in this folder: training data (`manifest_v14.csv`, `folds_v14.json`), SLURM scripts, `runs/`, `logs/` and `output/`. It reads the images from `genai_lance_landmarking/raw_images/` and `landmarked_images/`, so nothing is written to `lance_landmarking/`. Only the network code (`lance_landmarking/cnn/train.py`, `evaluate.py`, `model.py`, `dataset.py`) is shared, and it is called by path.
+
+Training runs on MCC, with the same environment as the earlier runs (`lance_landmarking/cnn/setup_env.sh`, `.condaenv` at the repo root on scratch).
 
 1. **Locally, only if the labels change:**
    ```
    python make_production_data.py
    ```
-   It writes `lance_landmarking/cnn/manifest_v14.csv` and `folds_v14.json`. Both are committed, so MCC gets them with the code.
+   It writes `manifest_v14.csv` and `folds_v14.json` here. Both are committed, so MCC gets them with the code.
 2. **On MCC, in the repo on scratch:**
    - Check out this branch (`git fetch && git checkout lance-cnn-production`), or copy the changed files.
-   - Make sure `lance_landmarking/raw_images/` is there in the snake_case layout (`raw_images/lbx/…`), for example with `tools/image_scp.sh`. Training reads only the raw images; the manifest paths are relative to `cnn/`.
+   - Make sure `genai_lance_landmarking/raw_images/` is there (`raw_images/lbx/…`, the same 968 files as `lance_landmarking/raw_images/`). Training reads only the raw images; the manifest paths are relative to this folder. To avoid storing 9.5 GB twice on scratch, a symlink works: `ln -s ../lance_landmarking/raw_images genai_lance_landmarking/raw_images`.
    - Run `setup_env.sh` again only if `.condaenv` is missing.
-3. **Submit, from `lance_landmarking/cnn/`:**
+3. **Submit, from `genai_lance_landmarking/production/`:**
    ```
    mkdir -p logs
    sbatch train_v14_folds.slurm                                  # 15 tasks: 0-4 Right, 5-9 Left, 10-14 Bottom folds
@@ -28,7 +30,7 @@ Training runs on MCC, with the same environment as the earlier runs (`lance_land
    Each model takes about 3 hours at 32 CPUs. A rerun of a task resumes from its `last.pt`. To rerun one model: `sbatch --array=7 train_v14_folds.slurm`.
 4. **Copy `genai_lance_landmarking/production/output/` back.** Then review the overlays and run `lance_v14_morphometrics.R` locally.
 
-Outputs go to `lance_landmarking/cnn/runs/v14/<view>_f<k>/`. Each run folder has `best.pt`, `split_keys.json`, and `eval_test.json`, the error on its held-out fold. `train_folds.sh` does the same training on a local machine; it takes about 20 hours on a laptop.
+Outputs go to `runs/v14/<view>_f<k>/` in this folder. Each run folder has `best.pt`, `split_keys.json`, and `eval_test.json`, the error on its held-out fold. `train_folds.sh` does the same training on a local machine; it takes about 20 hours on a laptop.
 
 **New image batches on MCC:**
 ```
@@ -39,7 +41,7 @@ sbatch --export=ALL,IMAGES=/scratch/.../batch3,GROUP=PBX,OUT=/scratch/.../batch3
 
 Locally, or on MCC through `landmark_v14.slurm`:
 ```
-python landmark_images.py                                  # whole mapping population (lance_landmarking/raw_images)
+python landmark_images.py                                  # whole mapping population (genai_lance_landmarking/raw_images)
 python landmark_images.py /path/to/new_images --group PBX  # new images; the view comes from the file name
 python export_geomorph.py                                  # -> output/geomorph/
 Rscript lance_v14_morphometrics.R                          # -> output/geomorph/PRIME_Lance<View>_Pheno_v14.csv
