@@ -8,16 +8,36 @@ There are 15 CNNs: 3 views × 5 cross-fitting folds. They are trained on the v1.
 
 Folds are assigned by family and balanced within each cross type, so siblings never sit on both sides of a train/test split.
 
-```
-python make_production_data.py        # -> lance_landmarking/cnn/manifest_v14.csv, folds_v14.json
-bash train_folds.sh 3 3 40            # local: 3 models at a time; rerun resumes; about 20 h in total
-# or on MCC, from lance_landmarking/cnn/:  sbatch train_v14_folds.slurm   (about 30 min per model)
-```
+Training runs on MCC, with the same environment as the earlier runs (`lance_landmarking/cnn/setup_env.sh`, `.condaenv` beside the repo on scratch).
 
-Outputs go to `lance_landmarking/cnn/runs/v14/<view>_f<k>/`. Each run folder has `best.pt`, `split_keys.json`, and `eval_test.json`, the error on its held-out fold.
+1. **Locally, only if the labels change:**
+   ```
+   python make_production_data.py
+   ```
+   It writes `lance_landmarking/cnn/manifest_v14.csv` and `folds_v14.json`. Both are committed, so MCC gets them with the code.
+2. **On MCC, in the repo on scratch:**
+   - Check out this branch (`git fetch && git checkout lance-cnn-production`), or copy the changed files.
+   - Make sure `lance_landmarking/raw_images/` is there in the snake_case layout (`raw_images/lbx/…`), for example with `tools/image_scp.sh`. Training reads only the raw images; the manifest paths are relative to `cnn/`.
+   - Run `setup_env.sh` again only if `.condaenv` is missing.
+3. **Submit, from `lance_landmarking/cnn/`:**
+   ```
+   mkdir -p logs
+   sbatch train_v14_folds.slurm                                  # 15 tasks: 0-4 Right, 5-9 Left, 10-14 Bottom folds
+   sbatch --dependency=afterok:<array job id> landmark_v14.slurm # landmarks the whole population + exports
+   ```
+   Each model takes about 3 hours at 32 CPUs. A rerun of a task resumes from its `last.pt`. To rerun one model: `sbatch --array=7 train_v14_folds.slurm`.
+4. **Copy `genai_lance_landmarking/production/output/` back.** Then review the overlays and run `lance_v14_morphometrics.R` locally.
+
+Outputs go to `lance_landmarking/cnn/runs/v14/<view>_f<k>/`. Each run folder has `best.pt`, `split_keys.json`, and `eval_test.json`, the error on its held-out fold. `train_folds.sh` does the same training on a local machine; it takes about 20 hours on a laptop.
+
+**New image batches on MCC:**
+```
+sbatch --export=ALL,IMAGES=/scratch/.../batch3,GROUP=PBX,OUT=/scratch/.../batch3_out landmark_v14.slurm
+```
 
 ## Landmarking
 
+Locally, or on MCC through `landmark_v14.slurm`:
 ```
 python landmark_images.py                                  # whole mapping population (lance_landmarking/raw_images)
 python landmark_images.py /path/to/new_images --group PBX  # new images; the view comes from the file name
