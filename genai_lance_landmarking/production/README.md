@@ -37,6 +37,16 @@ Outputs go to `runs/v14/<view>_f<k>/` in this folder. Each run folder has `best.
 sbatch --export=ALL,IMAGES=/scratch/.../batch3,GROUP=PBX,OUT=/scratch/.../batch3_out landmark_v14.slurm
 ```
 
+**Held-out error of the production models** (MCC job 36849347; every labelled image, predicted once by the model that never saw it):
+
+| View | Images | Mean | Median | 90th percentile |
+|---|---|---|---|---|
+| Right | 273 | 11.4 µm | 10.5 µm | 16.4 µm |
+| Left | 265 | 11.8 µm | 10.6 µm | 16.3 µm |
+| Bottom | 238 | 15.9 µm | 13.6 µm | 26.1 µm |
+
+These errors are measured against the automatic labels. The largest are on the heel (R02/R03, L02/L03) and at the Bottom shoulders (B12/B13).
+
 ## Landmarking
 
 Locally, or on MCC through `landmark_v14.slurm`:
@@ -55,7 +65,8 @@ Rscript lance_v14_morphometrics.R                          # -> output/geomorph/
 
 | Flag | Meaning |
 |---|---|
-| `spread` | The 5 models disagree |
+| `spread` | The 5 models disagree (only meaningful for `ensemble` images) |
+| `label_gap` | A held-out prediction is far from the image's own v1.4 label (over 21 µm lateral, 27 µm Bottom). The CNN or the label is wrong; the overlay draws both, with the label in cyan |
 | `order` | Sutures are out of order along the axis |
 | `outside` | A point falls outside the image |
 | `shape` | The individual is a Procrustes outlier |
