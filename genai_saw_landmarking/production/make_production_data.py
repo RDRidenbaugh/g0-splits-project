@@ -1,7 +1,9 @@
 """Training data for the saw (protocol v1.1) landmark models (step 2 of the saw production pipeline).
 
 Reads image_table.csv (prep_images.py) and ../autolabels/labels_v12.csv + qc_v12.csv, and writes here:
-  manifest_saw_v12.csv  one row per prepared image whose v1.1 label passed QC, in the layout the
+  manifest_saw_v12.csv  one row per prepared image with a usable v1.2 label: it passed the automatic QC
+                        or was marked "ok" in ../review/label_review.csv, and was not marked "drop"
+                        (landmark_source autolabel_v1.2 / autolabel_v1.2_reviewed), in the layout the
                         shared CNN code (lance_landmarking/cnn) reads: angle = "Saw", raw_image =
                         images/<key>.tif (mirrored apex-left, colour-normalized; same pixel grid as
                         the marked TIFF the label was made on), landmarks_px_json = the 52 points.
@@ -92,17 +94,27 @@ def main():
     by_stem = {k: v[1] for k, v in by_stem.items()}
 
     qc = {r['txt']: r['pass'] == '1' for r in csv.DictReader(open(os.path.join(ROOT, 'autolabels/qc_v12.csv')))}
+    # human review (review/label_review.csv) overrides the automatic QC: ok = use, drop = never use
+    review = {}
+    rp = os.path.join(ROOT, 'review', 'label_review.csv')
+    if os.path.exists(rp):
+        review = {r['txt']: r['decision'].strip().lower() for r in csv.DictReader(open(rp)) if r['txt']}
     labels, no_image = {}, []
     for r in csv.DictReader(open(os.path.join(ROOT, 'autolabels/labels_v12.csv'))):
-        if not qc.get(r['txt']):
+        decision = review.get(r['txt'], '')
+        if decision == 'drop' or not (qc.get(r['txt']) or decision == 'ok'):
             continue
         stem = re.sub(r'_(MARK|XY)_[A-Z]+$', '', os.path.splitext(os.path.basename(r['txt']))[0]).upper()
         im = by_stem.get(stem)
+        if im is None:  # txt named without the side (e.g. 097_04_F1 for raw 097_04_F1_L)
+            cand = [v for k, v in by_stem.items() if re.fullmatch(re.escape(stem) + r'_[LR](_V\d+)?', k)]
+            im = cand[0] if len(cand) == 1 else None
         if im is None:
             no_image.append(r['txt']); continue
         if im['key'] in labels:  # digitized twice: keep the first
             continue
-        labels[im['key']] = ([[round(float(r[f'{p}_x']), 2), round(float(r[f'{p}_y']), 2)] for p in ORDER], r['txt'])
+        src = 'autolabel_v1.2' if qc.get(r['txt']) else 'autolabel_v1.2_reviewed'
+        labels[im['key']] = ([[round(float(r[f'{p}_x']), 2), round(float(r[f'{p}_y']), 2)] for p in ORDER], r['txt'], src)
 
     # exact duplicate files (archive copies, re-exports) point at the first copy
     import hashlib
@@ -123,11 +135,11 @@ def main():
     for r in imgs:
         if r['key'] not in labels or r['duplicate_of']:
             continue
-        pts, txt = labels[r['key']]
+        pts, txt, src = labels[r['key']]
         w, h = 2560, 1920
         out.append(dict(group=r['group'], angle='Saw', key=r['key'], marked_tiff='', txt=os.path.relpath(os.path.join(ROOT, txt), HERE),
                         raw_image=r['image'], raw_group=r['group'], n_expected=len(pts), n_found=len(pts),
-                        landmark_source='autolabel_v1.2', image_width=w, image_height=h,
+                        landmark_source=src, image_width=w, image_height=h,
                         landmarks_px_json=json.dumps(pts), flags=''))
     with open(os.path.join(HERE, 'manifest_saw_v12.csv'), 'w', newline='') as fh:
         w_ = csv.DictWriter(fh, fieldnames=list(out[0])); w_.writeheader(); w_.writerows(out)

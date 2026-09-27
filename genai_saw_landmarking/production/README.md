@@ -10,7 +10,7 @@ Same design as the lance v1.4 production pipeline (`../../genai_lance_landmarkin
    - In the protocol frame (`../tools/frame.py`): apex left, teeth up. The image is mirrored left-right when needed so the apex points left, then flipped top to bottom. The orientation comes from the marked TIFF when there is one (410 images), otherwise from the filename's L/R.
    - Colour-normalized by the image's own background colour, so the green, pink, grey and white sessions look alike.
    - Same pixel grid as the raw image, so labels and predictions map back 1:1.
-2. **`python make_production_data.py`** writes `manifest_saw_v12.csv` (311 labelled images: the v1.2 autolabels that passed QC) and `folds_saw_v12.json`.
+2. **`python make_production_data.py`** writes `manifest_saw_v12.csv` and `folds_saw_v12.json`. The manifest has **380 labelled images, 95% of the 399 unique images**: 311 autolabels that passed QC, plus 69 that failed QC but were marked "ok" in `../review/label_review.csv`. Labels marked "drop" are never used, and `landmark_source` says which route each label took. The 19 images without a label are still landmarked by the models (folds cover every image).
    - Exact duplicate raw files (18 stems, 20 copies: archive copies) are marked `duplicate_of` and skipped.
    - An image digitized twice (the BH/GK pairs) keeps one label.
 3. **Train on MCC:** copy `images/`, the manifest and the folds to the repo on MCC, then from this folder run `mkdir -p logs && sbatch train_saw_v12_folds.slurm`. It's a 5-task array, one per fold; the lance models took about 3 h each at 32 CPUs. Models go to `runs/v12/saw_f<k>/`, and held-out errors in px to `eval_test.json`.
