@@ -18,7 +18,7 @@ Training runs on MCC, with the same environment as the earlier runs (`lance_land
    ```
    It writes `manifest_v14.csv` and `folds_v14.json` here. Both are committed, so MCC gets them with the code.
 2. **On MCC, in the repo on scratch:**
-   - Check out this branch (`git fetch && git checkout lance-cnn-production`), or copy the changed files.
+   - Update the repo: `git checkout main && git pull`.
    - Make sure `genai_lance_landmarking/raw_images/` is there (`raw_images/lbx/…`, the same 968 files as `lance_landmarking/raw_images/`). Training reads only the raw images; the manifest paths are relative to this folder. To avoid storing 9.5 GB twice on scratch, a symlink works: `ln -s ../lance_landmarking/raw_images genai_lance_landmarking/raw_images`.
    - Run `setup_env.sh` again only if `.condaenv` is missing.
 3. **Submit, from `genai_lance_landmarking/production/`:**
