@@ -59,14 +59,18 @@ Rscript lance_v14_morphometrics.R                          # -> output/geomorph/
 
 **No image is predicted by a model that trained on it.** An image whose label was used in training gets the model for which it was held out (source `oof_f<k>`). Every other image gets the mean of the five models (source `ensemble`). This covers images that failed label QC, images never digitized, and new images. The whole population is therefore phenotyped the same way.
 
-**Calibration** is read per image, in this order:
+**Calibration: every image from its own scale bar** (lab decision, 2026-09-27). In order:
 1. `--px-per-mm`, if given.
-2. The calibration NIS-Elements writes into its TIFFs. The 2560×1920 images were taken on a Nikon DS-Fi2-U3 on the SMZ at 3.00× zoom and read 1321.9 px/mm; their 200 µm bar is 264 px.
-3. Otherwise, the image width. The 3840×2160 files carry no calibration; their 1 mm bar is 926–929 px, so 927 px/mm.
+2. **The image's burned-in red scale bar** (`cal_source` = `scale_bar`). Its length is divided by the round length (10 µm to 5 mm) whose px/mm is closest to the nominal value below, and it is used when that is within 2% of nominal (imagers differ by ≤ 1%; a broken bar fragment in PBX012V10_R read 3.6% off and is rejected). Imagers differ by ~1% (the g0 lances: KD's 1 mm bar is 928 px, CW's 918 px), which a fixed value would miss.
+3. No usable bar: the nominal value, with a `no_bar` flag (no bar, or only the red ID text) or a `scale_bar` flag (a truncated or broken bar, or a bar > 2% from nominal).
+
+Nominal values:
+- The calibration NIS-Elements writes into its TIFFs. The 2560×1920 images (Nikon DS-Fi2-U3 on the SMZ at 3.00×) read 1321.9 px/mm; their 200 µm bar is 264 px.
+- Otherwise, the image width. The 3840×2160 files carry no calibration; their 1 mm bar is 926–929 px, so the nominal is 927 px/mm.
 
 The ImageJ calibration stored in the marked 2560×1920 TIFFs, 1260 px/mm, is about 5% low: it disagrees with both the NIS value and the scale bar. It is not used.
 
-Every image's red scale bar is also measured. It must come out a round length (10 µm to 5 mm, within 1.5%) under the calibration used; otherwise the image is flagged `scale_bar`, or `no_bar` if no bar is found. This catches a changed zoom or a wrong calibration in new batches.
+Predictions made before 2026-09-27 used the NIS tag or the image width directly. Re-run `landmark_images.py` (or recalibrate `px_per_mm` from each image's bar) before exporting final mm tables; for the backcross images the change is within ±0.2%.
 
 **QC flags:**
 
@@ -78,8 +82,8 @@ Every image's red scale bar is also measured. It must come out a round length (1
 | `outside` | A point falls outside the image |
 | `shape` | The individual is a Procrustes outlier |
 | `no_scale` | No calibration was found |
-| `scale_bar` | The burned-in scale bar is not a round length under the calibration used |
-| `no_bar` | No red scale bar was found |
+| `scale_bar` | The burned-in bar could not be used (truncated, broken, or > 2% from nominal): nominal calibration applied, check the image |
+| `no_bar` | No red scale bar was found: nominal calibration applied |
 | `in_sample` | The model that should have held this image out is missing |
 
 Flagged images get an overlay in `output/overlays/<View>/`. To override a flag, add a row to `qc_review.csv` with `view,key,decision,note`, where `decision` is `keep` or `drop`. Then rerun `export_geomorph.py`.

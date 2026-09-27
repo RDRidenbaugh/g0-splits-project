@@ -25,3 +25,21 @@ genai_lance_landmarking/production/output/
 genai_lance_landmarking/production/*.log
 genai_lance_landmarking/production/runs/
 genai_lance_landmarking/production/logs/
+
+# genai_saw_landmarking: image data and generated files (kept on disk, not versioned)
+genai_saw_landmarking/g0/
+genai_saw_landmarking/splits/
+genai_saw_landmarking/excluded/
+genai_saw_landmarking/*.tif
+genai_saw_landmarking/*.mp4
+genai_saw_landmarking/**/*:Zone.Identifier
+genai_saw_landmarking/review/overlays/
+genai_saw_landmarking/production/images/
+genai_saw_landmarking/production/runs/
+genai_saw_landmarking/production/logs/
+genai_saw_landmarking/production/output/
+genai_saw_landmarking/analysis/data/
+genai_saw_landmarking/analysis/output/
+genai_saw_landmarking/autolabels/
+genai_saw_landmarking/*.pdf
+genai_saw_landmarking/ovipositor_morphometrics_protocol_v6.docx

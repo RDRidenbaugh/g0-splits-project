@@ -21,10 +21,11 @@ QC flags written per image (the image is still exported; step 2 decides):
   order       sutures / window ends out of order along the lance's axis
   outside     a point off the image
   shape       Procrustes distance to the view's mean shape is a robust outlier (z > 4)
-  no_scale    no calibration: no --px-per-mm, no NIS-Elements tag, unknown image width
-  scale_bar   the burned-in red scale bar is not a round length (10 um ... 5 mm, within 1.5%)
-              under the calibration used: wrong calibration or changed zoom
-  no_bar      no red scale bar found
+  no_scale    no calibration: no --px-per-mm, no usable scale bar, no NIS-Elements tag, unknown width
+  scale_bar   the burned-in red scale bar is > 2% from every round length under the nominal
+              calibration (broken/truncated bar, or a zoom change): not used; the image falls
+              back to the nominal calibration and needs checking
+  no_bar      no red scale bar found: calibrated from the nominal value (NIS tag or image width)
   in_sample   a trained image whose held-out model is missing (all models saw it)
 
 Outputs in --out-dir:
@@ -58,14 +59,22 @@ from model import HeatmapNet  # noqa: E402
 SCHEMA = json.load(open(HERE.parent / "landmark_schema.json"))
 VIEWS = {"R": "Right", "L": "Left", "B": "Bottom"}
 NAME_RE = re.compile(r"^(?P<id>.+?)[_ ]+(?P<view>[RLB])(?P<frame>\d*)$", re.I)
-# ImageJ calibration of the two imaging sessions (read from the marked TIFFs; one per camera)
-# Calibration, in order: --px-per-mm; the per-image calibration that Nikon NIS-Elements writes
+# Calibration (2026-09-27, user: every image is calibrated from its OWN scale bar), in order:
+#   1. --px-per-mm;
+#   2. the image's burned-in red scale bar: its length / the round length (10 um ... 5 mm) that is
+#      closest to the nominal calibration below, when that is within 2% of nominal (cal_source
+#      "scale_bar"). Imagers differ by ~1%: KD's 1 mm bar is 928 px, CW's 918 px;
+#   3. no usable bar: the nominal value, flagged no_bar / scale_bar.
+# Nominal: the per-image calibration that Nikon NIS-Elements writes
 # into its TIFFs (tag 65326, um/px; the 2560x1920 DS-Fi2-U3 images at SMZ zoom 3.00x: 1321.9
 # px/mm, matching their 200 um scale bar = 264 px); else by image width. The 3840x2160 files
 # carry no calibration; their 1 mm scale bar is 926-929 px, matching ImageJ's 927.
 # (The ImageJ calibration of the 2560 images, 1260 px/mm, is ~5% low: it disagrees with both.)
 PX_PER_MM = {3840: 927.0, 2560: 1321.9}
 NIS_UM_PER_PX_TAG = 65326
+MIN_BAR_PX = 100  # shorter red runs are the ID text, not a bar
+BAR_TOL = 1.02    # a bar is used when within 2% of a round length at the nominal scale (imagers differ by <= 1%;
+                  # a broken bar fragment, e.g. PBX012V10_R read as 250 um at 3.6%, must be rejected)
 NICE_BAR_UM = np.array([10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 5000])
 GROUP_DIRS = {"lbx": "LBX", "pbx": "PBX", "f1": "F1", "parents": "Parents", "non_laying_parents": "Non_Laying_Parents"}
 # (view, sequence that must run proximal -> distal along the lance's axis)
@@ -230,7 +239,7 @@ def main():
     ap.add_argument("--out-dir", default=str(HERE / "output"))
     ap.add_argument("--runs", default=str(HERE / "runs" / "v14"), help="folder holding <view>_f<k>/best.pt")
     ap.add_argument("--group", help="cross type for images not in the manifest (default: from the folder name)")
-    ap.add_argument("--px-per-mm", type=float, help="calibration for all images (default: by image width)")
+    ap.add_argument("--px-per-mm", type=float, help="calibration for all images (default: each image's own scale bar)")
     ap.add_argument("--overlays", choices=["flagged", "all", "none"], default="flagged")
     ap.add_argument("--views", default="Right,Left,Bottom")
     ap.add_argument("--batch-size", type=int, default=8)
@@ -292,21 +301,22 @@ def main():
         med_spread = max(0.5, np.median(spread[ens]) if ens.any() else np.median(spread))
         for i, r in enumerate(vrows):
             f = []
+            nominal, nominal_src = (round(r["nis"], 2), "nis_tiff") if r["nis"] else \
+                (PX_PER_MM.get(r["width"]), "image_width" if PX_PER_MM.get(r["width"]) else "")
+            ppm, r["cal_source"], r["scale_bar_um"] = None, "", ""
             if a.px_per_mm:
                 ppm, r["cal_source"] = a.px_per_mm, "argument"
-            elif r["nis"]:
-                ppm, r["cal_source"] = round(r["nis"], 2), "nis_tiff"
-            else:
-                ppm = PX_PER_MM.get(r["width"])
-                r["cal_source"] = "image_width" if ppm else ""
-            r["scale_bar_um"] = ""
-            if ppm and r["bar"]:  # the burned-in bar must be a round length under this calibration
-                bar_um = r["bar"] / ppm * 1000
-                r["scale_bar_um"] = round(bar_um, 1)
-                if np.min(np.abs(NICE_BAR_UM / bar_um - 1)) > 0.015:
+            elif r["bar"] >= MIN_BAR_PX and nominal:  # the image's own bar, read as the round length nearest nominal
+                cand = r["bar"] / (NICE_BAR_UM / 1000.0)
+                k = int(np.argmin(np.abs(np.log(cand / nominal))))
+                if abs(np.log(cand[k] / nominal)) <= np.log(BAR_TOL):
+                    ppm, r["cal_source"], r["scale_bar_um"] = round(float(cand[k]), 2), "scale_bar", int(NICE_BAR_UM[k])
+                else:
                     f.append("scale_bar")
-            elif not r["bar"]:
+            elif r["bar"] < MIN_BAR_PX:  # nothing, or only the red ID text
                 f.append("no_bar")
+            if ppm is None and nominal:
+                ppm, r["cal_source"] = nominal, nominal_src
             gap = ""
             if r["key"] in trained and ppm:  # held-out prediction vs the image's own label, mean over points
                 gap = np.linalg.norm(preds[i] - trained[r["key"]], axis=1).mean() / ppm * 1000

@@ -1,0 +1,637 @@
+{
+ "protocol": "Neodiprion saw (first valvula) landmark + semilandmark protocol",
+ "version": "1.2",
+ "date": "2026-09-27",
+ "orientation": "protocol frame: apex LEFT, serrulae (teeth) UP; images are mirrored left-right when needed and flipped top to bottom in software (tools/frame.py)",
+ "calibration": "per image, from its own burned-in scale bar (tools/scalebar.py; analysis/data/calibration.csv)",
+ "n_points": 52,
+ "anchors": {
+  "S01": {
+   "type": "II",
+   "name": "Apex",
+   "definition": "Distal tip of the saw: the point of maximum curvature where the ventral and dorsal outlines meet.",
+   "old": [
+    15
+   ]
+  },
+  "V1": {
+   "type": "I",
+   "name": "Annulus 1, ventral end",
+   "definition": "Ventral end of the dark band of annulus 1. The ventral margin here is pale membrane, so the point is often a few um inside the outline; place it at the end of the band, not on the membrane.",
+   "old": [
+    1
+   ]
+  },
+  "V2": {
+   "type": "I",
+   "name": "Annulus 2, ventral end",
+   "definition": "Where the dark band of annulus 2 meets the ventral (toothed) outline, i.e. the proximal base of serrula 2.",
+   "old": [
+    2
+   ]
+  },
+  "V3": {
+   "type": "I",
+   "name": "Annulus 3, ventral end",
+   "definition": "Where the dark band of annulus 3 meets the ventral (toothed) outline, i.e. the proximal base of serrula 3.",
+   "old": [
+    5
+   ]
+  },
+  "V4": {
+   "type": "I",
+   "name": "Annulus 4, ventral end",
+   "definition": "Where the dark band of annulus 4 meets the ventral (toothed) outline, i.e. the proximal base of serrula 4.",
+   "old": [
+    8
+   ]
+  },
+  "V5": {
+   "type": "I",
+   "name": "Annulus 5, ventral end",
+   "definition": "Where the dark band of annulus 5 meets the ventral (toothed) outline, i.e. the proximal base of serrula 5.",
+   "old": [
+    10
+   ]
+  },
+  "V6": {
+   "type": "I",
+   "name": "Annulus 6, ventral end",
+   "definition": "Where the dark band of annulus 6 meets the ventral (toothed) outline, i.e. the proximal base of serrula 6.",
+   "old": [
+    11
+   ]
+  },
+  "V7": {
+   "type": "I",
+   "name": "Annulus 7, ventral end",
+   "definition": "Where the dark band of annulus 7 meets the ventral (toothed) outline, i.e. the proximal base of serrula 7.",
+   "old": [
+    12
+   ]
+  },
+  "T2": {
+   "type": "II",
+   "name": "Serrula 2, tip",
+   "definition": "Distal tip of serrula 2: the most protruding point of the tooth lobe that lies distal to V2, measured perpendicular to the line V2 -> V3 (not \"lowest in the image\").",
+   "old": [
+    3
+   ]
+  },
+  "T3": {
+   "type": "II",
+   "name": "Serrula 3, tip",
+   "definition": "Distal tip of serrula 3: the most protruding point of the tooth lobe that lies distal to V3, measured perpendicular to the line V3 -> V4 (not \"lowest in the image\").",
+   "old": [
+    6
+   ]
+  },
+  "T4": {
+   "type": "II",
+   "name": "Serrula 4, tip",
+   "definition": "Distal tip of serrula 4: the most protruding point of the tooth lobe that lies distal to V4, measured perpendicular to the line V4 -> V5 (not \"lowest in the image\").",
+   "old": [
+    9
+   ]
+  },
+  "R1": {
+   "type": "I",
+   "name": "Annulus 1 x rachis",
+   "definition": "Where the distal (toothed) edge of annulus 1 crosses the ventral margin of the rachis (the dark longitudinal strip).",
+   "old": [
+    16
+   ]
+  },
+  "R2": {
+   "type": "I",
+   "name": "Annulus 2 x rachis",
+   "definition": "Where the distal (toothed) edge of annulus 2 crosses the ventral margin of the rachis (the dark longitudinal strip).",
+   "old": [
+    17
+   ]
+  },
+  "R3": {
+   "type": "I",
+   "name": "Annulus 3 x rachis",
+   "definition": "Where the distal (toothed) edge of annulus 3 crosses the ventral margin of the rachis (the dark longitudinal strip).",
+   "old": [
+    18
+   ]
+  },
+  "R4": {
+   "type": "I",
+   "name": "Annulus 4 x rachis",
+   "definition": "Where the distal (toothed) edge of annulus 4 crosses the ventral margin of the rachis (the dark longitudinal strip).",
+   "old": [
+    19
+   ]
+  },
+  "R5": {
+   "type": "I",
+   "name": "Annulus 5 x rachis",
+   "definition": "Where the distal (toothed) edge of annulus 5 crosses the ventral margin of the rachis (the dark longitudinal strip).",
+   "old": [
+    20
+   ]
+  },
+  "R6": {
+   "type": "I",
+   "name": "Annulus 6 x rachis",
+   "definition": "Where the distal (toothed) edge of annulus 6 crosses the ventral margin of the rachis (the dark longitudinal strip).",
+   "old": [
+    21
+   ]
+  },
+  "R7": {
+   "type": "I",
+   "name": "Annulus 7 x rachis",
+   "definition": "Where the distal (toothed) edge of annulus 7 crosses the ventral margin of the rachis (the dark longitudinal strip).",
+   "old": [
+    22
+   ]
+  },
+  "D1": {
+   "type": "I",
+   "name": "Annulus 1, dorsal end",
+   "definition": "Where annulus 1 crosses the dorsal margin of the rachis. A pale cuticle strip lies above the rachis, so this point is inside the saw, not on its outline.",
+   "old": [
+    23
+   ]
+  },
+  "D2": {
+   "type": "I",
+   "name": "Annulus 2, dorsal end",
+   "definition": "Where annulus 2 crosses the dorsal margin of the rachis. A pale cuticle strip lies above the rachis, so this point is inside the saw, not on its outline.",
+   "old": [
+    24
+   ]
+  },
+  "D3": {
+   "type": "II",
+   "name": "Annulus 3, dorsal end",
+   "definition": "Dorsal end of the dark band of annulus 3, above the rachis. It lies BELOW the dorsal outline (a pale cuticle strip separates them); do not place it on the outline.",
+   "old": [
+    27
+   ]
+  },
+  "D4": {
+   "type": "II",
+   "name": "Annulus 4, dorsal end",
+   "definition": "Dorsal end of the dark band of annulus 4, above the rachis. It lies BELOW the dorsal outline (a pale cuticle strip separates them); do not place it on the outline.",
+   "old": [
+    28
+   ]
+  },
+  "D5": {
+   "type": "II",
+   "name": "Annulus 5, dorsal end",
+   "definition": "Dorsal end of the dark band of annulus 5, above the rachis. It lies BELOW the dorsal outline (a pale cuticle strip separates them); do not place it on the outline.",
+   "old": [
+    29
+   ]
+  },
+  "D6": {
+   "type": "II",
+   "name": "Annulus 6, dorsal end",
+   "definition": "Dorsal end of the dark band of annulus 6, above the rachis. It lies BELOW the dorsal outline (a pale cuticle strip separates them); do not place it on the outline.",
+   "old": [
+    30
+   ]
+  },
+  "D7": {
+   "type": "II",
+   "name": "Annulus 7, dorsal end",
+   "definition": "Dorsal end of the dark band of annulus 7, above the rachis. It lies BELOW the dorsal outline (a pale cuticle strip separates them); do not place it on the outline.",
+   "old": [
+    31
+   ]
+  }
+ },
+ "computed": {},
+ "curves": {
+  "ventral": [
+   "V2",
+   1,
+   "T2",
+   2,
+   "V3",
+   1,
+   "T3",
+   2,
+   "V4",
+   1,
+   "T4",
+   2,
+   "V5",
+   3,
+   "V6",
+   3,
+   "V7",
+   6,
+   "S01"
+  ],
+  "rachis": [
+   "R1",
+   1,
+   "R2",
+   1,
+   "R3",
+   1,
+   "R4",
+   1,
+   "R5",
+   1,
+   "R6",
+   1,
+   "R7"
+  ]
+ },
+ "curve_trace": {
+  "ventral": "outline",
+  "rachis": "edge"
+ },
+ "point_order": [
+  {
+   "id": "S01",
+   "role": "anchor"
+  },
+  {
+   "id": "V1",
+   "role": "anchor"
+  },
+  {
+   "id": "V2",
+   "role": "anchor"
+  },
+  {
+   "id": "V3",
+   "role": "anchor"
+  },
+  {
+   "id": "V4",
+   "role": "anchor"
+  },
+  {
+   "id": "V5",
+   "role": "anchor"
+  },
+  {
+   "id": "V6",
+   "role": "anchor"
+  },
+  {
+   "id": "V7",
+   "role": "anchor"
+  },
+  {
+   "id": "T2",
+   "role": "anchor"
+  },
+  {
+   "id": "T3",
+   "role": "anchor"
+  },
+  {
+   "id": "T4",
+   "role": "anchor"
+  },
+  {
+   "id": "R1",
+   "role": "anchor"
+  },
+  {
+   "id": "R2",
+   "role": "anchor"
+  },
+  {
+   "id": "R3",
+   "role": "anchor"
+  },
+  {
+   "id": "R4",
+   "role": "anchor"
+  },
+  {
+   "id": "R5",
+   "role": "anchor"
+  },
+  {
+   "id": "R6",
+   "role": "anchor"
+  },
+  {
+   "id": "R7",
+   "role": "anchor"
+  },
+  {
+   "id": "D1",
+   "role": "anchor"
+  },
+  {
+   "id": "D2",
+   "role": "anchor"
+  },
+  {
+   "id": "D3",
+   "role": "anchor"
+  },
+  {
+   "id": "D4",
+   "role": "anchor"
+  },
+  {
+   "id": "D5",
+   "role": "anchor"
+  },
+  {
+   "id": "D6",
+   "role": "anchor"
+  },
+  {
+   "id": "D7",
+   "role": "anchor"
+  },
+  {
+   "id": "ventral:V2-T2:1",
+   "role": "semi"
+  },
+  {
+   "id": "ventral:T2-V3:1",
+   "role": "semi"
+  },
+  {
+   "id": "ventral:T2-V3:2",
+   "role": "semi"
+  },
+  {
+   "id": "ventral:V3-T3:1",
+   "role": "semi"
+  },
+  {
+   "id": "ventral:T3-V4:1",
+   "role": "semi"
+  },
+  {
+   "id": "ventral:T3-V4:2",
+   "role": "semi"
+  },
+  {
+   "id": "ventral:V4-T4:1",
+   "role": "semi"
+  },
+  {
+   "id": "ventral:T4-V5:1",
+   "role": "semi"
+  },
+  {
+   "id": "ventral:T4-V5:2",
+   "role": "semi"
+  },
+  {
+   "id": "ventral:V5-V6:1",
+   "role": "semi"
+  },
+  {
+   "id": "ventral:V5-V6:2",
+   "role": "semi"
+  },
+  {
+   "id": "ventral:V5-V6:3",
+   "role": "semi"
+  },
+  {
+   "id": "ventral:V6-V7:1",
+   "role": "semi"
+  },
+  {
+   "id": "ventral:V6-V7:2",
+   "role": "semi"
+  },
+  {
+   "id": "ventral:V6-V7:3",
+   "role": "semi"
+  },
+  {
+   "id": "ventral:V7-S01:1",
+   "role": "semi"
+  },
+  {
+   "id": "ventral:V7-S01:2",
+   "role": "semi"
+  },
+  {
+   "id": "ventral:V7-S01:3",
+   "role": "semi"
+  },
+  {
+   "id": "ventral:V7-S01:4",
+   "role": "semi"
+  },
+  {
+   "id": "ventral:V7-S01:5",
+   "role": "semi"
+  },
+  {
+   "id": "ventral:V7-S01:6",
+   "role": "semi"
+  },
+  {
+   "id": "rachis:R1-R2:1",
+   "role": "semi"
+  },
+  {
+   "id": "rachis:R2-R3:1",
+   "role": "semi"
+  },
+  {
+   "id": "rachis:R3-R4:1",
+   "role": "semi"
+  },
+  {
+   "id": "rachis:R4-R5:1",
+   "role": "semi"
+  },
+  {
+   "id": "rachis:R5-R6:1",
+   "role": "semi"
+  },
+  {
+   "id": "rachis:R6-R7:1",
+   "role": "semi"
+  }
+ ],
+ "geomorph_curves": [
+  [
+   3,
+   26,
+   9
+  ],
+  [
+   9,
+   27,
+   28
+  ],
+  [
+   27,
+   28,
+   4
+  ],
+  [
+   4,
+   29,
+   10
+  ],
+  [
+   10,
+   30,
+   31
+  ],
+  [
+   30,
+   31,
+   5
+  ],
+  [
+   5,
+   32,
+   11
+  ],
+  [
+   11,
+   33,
+   34
+  ],
+  [
+   33,
+   34,
+   6
+  ],
+  [
+   6,
+   35,
+   36
+  ],
+  [
+   35,
+   36,
+   37
+  ],
+  [
+   36,
+   37,
+   7
+  ],
+  [
+   7,
+   38,
+   39
+  ],
+  [
+   38,
+   39,
+   40
+  ],
+  [
+   39,
+   40,
+   8
+  ],
+  [
+   8,
+   41,
+   42
+  ],
+  [
+   41,
+   42,
+   43
+  ],
+  [
+   42,
+   43,
+   44
+  ],
+  [
+   43,
+   44,
+   45
+  ],
+  [
+   44,
+   45,
+   46
+  ],
+  [
+   45,
+   46,
+   1
+  ],
+  [
+   12,
+   47,
+   13
+  ],
+  [
+   13,
+   48,
+   14
+  ],
+  [
+   14,
+   49,
+   15
+  ],
+  [
+   15,
+   50,
+   16
+  ],
+  [
+   16,
+   51,
+   17
+  ],
+  [
+   17,
+   52,
+   18
+  ]
+ ],
+ "old_to_new": {
+  "15": "S01",
+  "1": "V1",
+  "2": "V2",
+  "5": "V3",
+  "8": "V4",
+  "10": "V5",
+  "11": "V6",
+  "12": "V7",
+  "3": "T2",
+  "6": "T3",
+  "9": "T4",
+  "16": "R1",
+  "17": "R2",
+  "18": "R3",
+  "19": "R4",
+  "20": "R5",
+  "21": "R6",
+  "22": "R7",
+  "23": "D1",
+  "24": "D2",
+  "27": "D3",
+  "28": "D4",
+  "29": "D5",
+  "30": "D6",
+  "31": "D7"
+ },
+ "old_dropped": {
+  "4": "notch after annulus 2: 95% of its inter-observer error lies along the outline -> ventral semilandmarks",
+  "7": "notch after annulus 3: 86% along the outline -> ventral semilandmarks",
+  "13": "annulus 8 ventral end: last annulus in N. pinetum, second-to-last in N. lecontei -> ventral curve + annulus record",
+  "14": "N. lecontei: annulus 9; N. pinetum: pre-apical notch. Not the same structure -> removed from the fixed set",
+  "25": "annulus 1 \"most proximal part above the rachis\": worst inter-observer error (19 um median), 74% across-outline",
+  "26": "annulus 2 equivalent of 25: 12 um median error; D2 (old 24) already marks annulus 2 dorsally",
+  "32": "annulus 8 dorsal end: same count problem as 13 -> annulus record"
+ },
+ "annulus_record": "For every complete annulus (1..n, n usually 8 in N. pinetum and 9 in N. lecontei), record (a) its crossing of the rachis curve as arc-length distance from the apex S01 in mm (the coordinate shared with the lance, whose sutures are recorded the same way along its interface edge), and (b) its ventral end V_k as an arc-length fraction of the ventral outline V1 -> S01. n and the spacings are phenotypes in their own right; they are not part of the Procrustes configuration."
+}

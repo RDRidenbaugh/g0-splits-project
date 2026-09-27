@@ -22,7 +22,7 @@ from __future__ import annotations
 
 ANGLES = ("Bottom", "Left", "Right")
 
-EXPECTED_N = {"Bottom": 17, "Left": 32, "Right": 36}
+EXPECTED_N = {"Bottom": 17, "Left": 32, "Right": 36, "Saw": 52}  # Saw: genai_saw_landmarking protocol v1.2 (only used for --angle choices)
 
 # 1-indexed landmark numbers that are independently-perceived anatomical
 # points (as opposed to "equidistant between X and Y" / "directly above
