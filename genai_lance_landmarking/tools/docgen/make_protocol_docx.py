@@ -451,7 +451,8 @@ table(["Column", "What to write"], [
     ("view", "R, L or B."),
     ("image_file", "The raw TIFF's file name."),
     ("roi_file", "The ROI set you saved (SampleID_R_ROI.zip etc.)."),
-    ("px_per_mm", "“Distance in pixels” from Set Scale on the 1 mm scale bar."),
+    ("px_per_mm", "“Distance in pixels” from Set Scale on the scale bar, with its labelled length (1 mm on the "
+                  "3840 × 2160 images; 200 µm on the 2560 × 1920 Nikon images). See “Scale calibration” below."),
     ("digitizer", "Your initials."),
     ("date", "Date digitized."),
     ("flagged_points", "IDs of anchors you couldn't see properly, separated by spaces (e.g. B12 B13); blank if none."),
@@ -471,6 +472,115 @@ steps([
         "name, or sutures out of order).",
         "FAIL: not converted. Usually the wrong number of anchors or curves; fix the ROI set and rerun."]),
 ])
+
+# ------------------------------------------------------------------ automated landmarking: QC review and correction
+doc.add_page_break()
+doc.add_heading("Automated Landmarking: Reviewing and Correcting the CNN Output", level=1)
+para("The production pipeline (genai_lance_landmarking/production/, see its README) places all points of this "
+     "protocol automatically with 15 CNNs (3 faces × 5 cross-validation folds). An image whose label was used in "
+     "training is predicted by the one model that never saw it (source oof_f0–oof_f4); every other image, including new "
+     "images, gets the mean of the 5 models (source ensemble). Every image is then checked automatically. Images that "
+     "fail a check are flagged and get an overlay picture in output/overlays/<View>/<key>.jpg for a person to review.")
+para("A flag means “look at this”, not “this is wrong”. In the first full run (MCC, September 2026), 58 of 963 images "
+     "were flagged (Right 12, Left 12, Dorsal 34). Most needed no change.")
+
+doc.add_heading("Reading an overlay", level=2)
+para("Each overlay is the raw image cropped to the specimen, with the CNN's points drawn on it:")
+table(["Mark", "Meaning"], [
+    ("Red circles with IDs (R01, B06, …)", "Anchor landmarks placed by the CNN."),
+    ("Blue circle (R18, L18, B14)", "The computed point: the dorsal curve start or the fork crotch."),
+    ("Small yellow circles", "Semilandmarks. They should lie on the outline, spread along each curve."),
+    ("Cyan circles joined by white lines",
+     "Only on images that had a training label: the label's position for each point, with a white line to the CNN's "
+     "prediction of the same point. Long white lines show where the two disagree."),
+    ("Yellow text, top left",
+     "Image key; source (oof_f3 = the held-out model, ensemble = mean of 5 models); the flags; for labelled images, "
+     "the label gap in µm."),
+], [2.2, 4.3])
+para("Judge every point against the anatomy, using the definitions in this protocol, not against the cyan points: "
+     "the automatic label can be the one that is wrong.")
+
+doc.add_heading("What each flag means", level=2)
+table(["Flag", "Meaning", "Usual outcome"], [
+    ("label_gap", "The held-out prediction is far from the image's own automatic label (more than 21 µm on "
+                  "average on Right/Left, 27 µm on Dorsal).",
+     "Either can be wrong. Example: on rx001-v5_l the label's dorsal points fall inside the blade and the CNN "
+     "is right (keep); on rx013xinv7-1-v38_l, a pale specimen, the CNN put the ventral suture ends in the middle of "
+     "the blade (correct or drop). On Dorsal it is often semilandmarks shifted along the outline, which sliding "
+     "in the analysis absorbs (keep)."),
+    ("shape", "The whole configuration is an unusual shape compared with all specimens of that face.",
+     "Often real biology. In the first run 18 of 22 were parents, mostly Lecontei on the Dorsal face, whose shape "
+     "is a minority in the pooled population; ll279xll297-1_b03 has every point on the anatomy (keep)."),
+    ("spread", "The 5 models disagree about this image (meaningful only for ensemble images).",
+     "Likely a real failure: check closely."),
+    ("order", "Sutures or window ends are out of sequence along the lance.", "Likely a real failure."),
+    ("outside", "A point lies outside the image.", "A real failure."),
+    ("scale_bar / no_bar", "The red scale bar is not a round length under the calibration used, or is missing.",
+     "Wrong calibration or a changed zoom: check the image's scale before using its mm values."),
+    ("no_scale", "No calibration could be found for the image.", "Supply one (--px-per-mm)."),
+    ("in_sample", "The model that should have held this image out is missing.", "Retrain the missing fold model."),
+], [1.1, 2.4, 3.0])
+para("Several flags at once usually means a total failure. Example: lx028xll255v2-1_r00 (spread, order, shape) "
+     "points the opposite way from every training image (apex to the left) and runs off the frame, so the points are "
+     "scattered. It cannot be fixed point by point: re-image it, or digitize it by hand.")
+
+doc.add_heading("Recording decisions", level=2)
+steps([
+    "Open each overlay in output/overlays/<View>/.",
+    ("Decide one of:", [
+        "keep: every point is on the anatomy (the flag was a false alarm or real biology);",
+        "drop: the prediction is wrong and the specimen will be left out;",
+        "correct: the prediction is wrong and will be fixed by hand (next section)."]),
+    "Write one row per reviewed image in genai_lance_landmarking/production/qc_review.csv with the columns "
+    "view, key, decision, note (for example: Bottom, ll279xll297-1_b03, keep, Lecontei shape; points correct). "
+    "Use keep or drop; until a correction is imported, record an image to be corrected as drop.",
+    "Rerun python export_geomorph.py. Your decisions override the flags; unflagged images pass automatically.",
+])
+para("Images whose file name has no _R, _L or _B (listed in output/unparsed_images.txt; in the first run "
+     "RX008-V3.tif, LL286xLL255-V2.tif, PX013xNP068-V4.tif, PBX009V19.tif and PBX013V18.tif) are not landmarked at "
+     "all. Rename them with the correct face and run them as a small batch.")
+
+doc.add_heading("Correcting landmarks by hand in Fiji", level=2)
+para("Corrections are made in Fiji (ImageJ), on the raw TIFF, never on an overlay picture (overlays are cropped and "
+     "resized, so their pixel positions are not the image's). Choose the route by how badly the prediction failed.")
+para("Route A: move the wrong points (a few points off).", bold=True)
+steps([
+    "Open the raw TIFF from genai_lance_landmarking/raw_images/.",
+    "Open Analyze > Tools > ROI Manager and load the image's point file (the CNN's points as one multi-point "
+    "selection, numbered in the order of landmark_key_v14.csv).",
+    "Select it in the ROI Manager. Turn on Edit > Options > Point Tool > Label points so each point shows its number.",
+    "With the multi-point tool active, drag each wrong point to its correct position, following the definitions in "
+    "this protocol. Never delete or add a point: the numbering must stay the same.",
+    "Semilandmarks (yellow in the overlay) only need to sit on the outline in the right order; their exact spacing "
+    "does not matter, because they slide during the Procrustes analysis.",
+    "Click Update in the ROI Manager, then More > Save, as SampleID_V_corr_ROI.zip.",
+])
+para("Route B: re-digitize the image (the prediction is unusable, e.g. a reversed or cut-off specimen).", bold=True)
+steps([
+    "Digitize the image from scratch following “Steps for every image” above: anchors as one multi-point selection, "
+    "then the curves as segmented lines, saved as SampleID_V_ROI.zip.",
+    "Convert it with tools/roi_to_landmarks.py as in “After digitizing”; the semilandmarks and the computed point are "
+    "placed by the software.",
+])
+para("Status (September 2026): the two small steps that connect Fiji to the pipeline are not built yet: writing each "
+     "flagged image's CNN points as a Fiji point file for Route A, and importing corrected points (from either route) "
+     "into export_geomorph.py so they replace the CNN's points (marked source = manual). Until they are, record "
+     "images that need correction as drop in qc_review.csv.", italic=True)
+
+doc.add_heading("Scale calibration", level=2)
+para("The images come from two camera setups, which is why they have two sizes:")
+table(["", "3840 × 2160", "2560 × 1920"], [
+    ("Images", "815: LBX, PBX, non-laying parents, 60 F1", "153: 147 Parents, 6 F1"),
+    ("Camera", "Not recorded in the file (a stand-alone device with no clock)",
+     "Nikon DS-Fi2-U3 through NIS-Elements D 4.60, SMZ stereo microscope at 3.00× zoom, Feb–Mar 2024"),
+    ("Scale bar", "1 mm = 926–929 px", "200 µm = 264 px"),
+    ("Calibration used", "927 px/mm", "1321.9 px/mm, read from each file's NIS-Elements metadata"),
+], [1.3, 2.4, 2.8])
+para("The ImageJ calibration stored in the marked 2560 × 1920 TIFFs (1260 px/mm) is about 5% low: it disagrees with "
+     "both the scale bar and the camera's own calibration, so mm values from those files (the old coordinate exports) "
+     "are about 4.9% too large. Shape is not affected, and neither is the backcross QTL data (all 3840 × 2160). The "
+     "pipeline measures every image's red scale bar and flags any image where it does not come out as a round length "
+     "(scale_bar), which catches a changed zoom or camera in new batches.")
 
 # ------------------------------------------------------------------ appendix
 doc.add_page_break()
