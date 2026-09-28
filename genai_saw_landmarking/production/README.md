@@ -14,7 +14,15 @@ Same design as the lance v1.4 production pipeline (`../../genai_lance_landmarkin
    - Exact duplicate raw files (18 stems, 20 copies: archive copies) are marked `duplicate_of` and skipped.
    - An image digitized twice (the BH/GK pairs) keeps one label.
 3. **Train on MCC:** copy `images/`, the manifest and the folds to the repo on MCC, then from this folder run `mkdir -p logs && sbatch train_saw_v12_folds.slurm`. It's a 5-task array, one per fold; the lance models took about 3 h each at 32 CPUs. Models go to `runs/v12/saw_f<k>/`, and held-out errors in px to `eval_test.json`.
-4. *(to build)* **Landmark every image** with the out-of-fold / ensemble rule, then write the mm export for geomorph using each image's own scale bar (`../analysis/data/calibration.csv`), un-mirrored side recorded, plus QC flags and overlays, as in the lance pipeline.
+4. **`python landmark_images.py`** (local, about 10 min on CPU) predicts all 399 unique images: 380 out-of-fold and 19 by the 5-model ensemble. Output is `output/predictions_px_saw.csv` in prepared-image pixels (protocol frame), with QC flags (`label_gap`, `spread`, `order`, `outside`, `shape`, `no_scale`) and overlays of the flagged images in `output/overlays/`.
+5. **`python export_geomorph.py`** writes `output/geomorph/Saw_v12_XY.csv`: one row per saw (ID × side), PRIME metadata, mm from each image's own scale bar, X1..Y52 in the protocol frame (x right, y down, apex left, teeth up). It also writes the slider matrix, the landmark key and an export report. PRIME IDs are matched by identical coordinates where the saw was digitized, otherwise by name. Decisions in `qc_review.csv` (key, decision = keep | drop) override the flags.
+
+**Validation (2026-09-27; `../analysis/prep_cnn_validation.py`, `cnn_validation.R`, `cnn_validation_modules.R`, `cnn_digitizer_host.R`).**
+- **Held-out error:** mean about 6 µm per point, median about 4.7 µm. The apex, V1 and D2 are as good as a second human digitizer; the crowded distal points (R6–R7, D6–D7, V5–V7) are the weakest.
+- **Against two people:** on the 14 images digitized by both BH and GK, the CNN is a median 5.0 / 5.4 µm from each, versus 2.0 µm between the two digitizers.
+- **Repeatability,** label vs CNN on 380 images: shape R = 0.87, log centroid size R = 0.996. Measurement error is 6.6% of shape variance.
+- **Biology on the same images:** species, pinetum diet and pinetum colony effects are equal for labels and CNN. Host in g0 lecontei is lower for the CNN (Z 6.1 vs 6.9 on 52 points; 5.8 vs 8.7 on the anchors). Part of the human host signal is a digitizer effect: after host, digitizer explains R² 0.065 (Z 5.5) of the human labels but 0.038 (Z 2.7) of the CNN. The host effect stays strongly significant in the CNN (Z 5.1 after digitizer).
+- **Option if more precision is needed:** retrain on images cropped to the saw before shrinking, which roughly doubles effective resolution.
 
 ## Notes
 
