@@ -16,8 +16,12 @@ session median exists). After looking at the overlays, record decisions in qc_re
 (key, decision = keep | drop, note); they override the flags.
 When a saw (same ID and side) has several images, the one kept is: passing QC, then out-of-fold over
 ensemble, then smallest model disagreement.
+Metadata: from the PRIME tables. metadata_overrides.csv (ID, species, host, treatment, colony, population, note)
+supplies or corrects it by ID: every non-empty cell replaces the value from PRIME/the ID rules, for all saws
+of that female. Use it (not hand edits of Saw_v12_XY.csv, which this script overwrites) for saws missing from
+PRIME or for corrections.
 
-usage: python export_geomorph.py
+usage: python export_geomorph.py [--out-dir output/geomorph]
 """
 import csv, json, os, sys
 from collections import defaultdict
@@ -34,7 +38,10 @@ ORDER = scheme.point_order()
 
 
 def main():
-    out = os.path.join(HERE, 'output', 'geomorph')
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--out-dir', default=os.path.join(HERE, 'output', 'geomorph'))
+    out = ap.parse_args().out_dir
     os.makedirs(out, exist_ok=True)
     rows = list(csv.DictReader(open(os.path.join(HERE, 'output', 'predictions_px_saw.csv'))))
     review = {}
@@ -56,6 +63,13 @@ def main():
         stem = re.sub(r'_(MARK|XY)_[A-Z]+$', '', os.path.splitext(os.path.basename(recs[i]['file']))[0]).upper()
         by_coord[stem] = norm_id(pid)
 
+    overrides = {}
+    op = os.path.join(HERE, 'metadata_overrides.csv')
+    if os.path.exists(op):
+        for r in csv.DictReader(open(op)):
+            overrides[norm_id(r['ID'])] = {c: r[c].strip() for c in ('species', 'host', 'treatment', 'colony', 'population')
+                                           if r.get(c, '').strip()}
+    used_overrides = set()
     col_sp = {}
     for pid, mm in pm.items():
         col_sp.setdefault(colony_of(pid, mm['cohort'], pm), mm['species'])
@@ -82,9 +96,12 @@ def main():
         ppm = float(r['px_per_mm'])
         xy = [round(float(r[f'{c}{k}']) / ppm, 5) for k in range(1, n + 1) for c in 'xy']
         sp = (m or {}).get('Species', '') or species_of(cid, r['cohort'], pm, col_sp).replace('UNKNOWN', '')  # not in PRIME: from the ID/colony
-        kept.append([m['ID'] if m else cid, side, r['cohort'], sp, (m or {}).get('Host', ''),
-                     (m or {}).get('Treatment', ''), colony_of(cid, r['cohort'], pm), (m or {}).get('Population', ''),
-                     r['px_per_mm'], r['cal_source'], r['source'], r['key'], r['flags'], str(r['qc_pass']).upper()] + xy)
+        md = dict(species=sp, host=(m or {}).get('Host', ''), treatment=(m or {}).get('Treatment', ''),
+                  colony=colony_of(cid, r['cohort'], pm), population=(m or {}).get('Population', ''))
+        if cid in overrides:
+            md.update(overrides[cid]); used_overrides.add(cid)
+        kept.append([m['ID'] if m else cid, side, r['cohort'], md['species'], md['host'], md['treatment'], md['colony'],
+                     md['population'], r['px_per_mm'], r['cal_source'], r['source'], r['key'], r['flags'], str(r['qc_pass']).upper()] + xy)
 
     head = ['ID', 'side', 'cohort', 'species', 'host', 'treatment', 'colony', 'population', 'px_per_mm',
             'cal_source', 'source', 'key', 'qc_flags', 'qc_pass'] + [f'{c}{k}' for k in range(1, n + 1) for c in 'XY']
@@ -98,9 +115,12 @@ def main():
             w.writerow([i, pid, role, scheme.ANCHORS[pid]['definition'] if pid in scheme.ANCHORS else 'sliding semilandmark on the ' + pid.split(':')[0] + ' curve'])
     npass = sum(k[13] == 'TRUE' for k in kept)
     lines = [f'{len(rows)} images -> {len(kept)} saws ({npass} pass QC, {len(kept) - npass} flagged)',
-             f'saws without PRIME metadata ({len(missing)}): {missing}', 'several images of one saw:'] + report
+             f'saws without PRIME metadata ({len(missing)}): {missing}',
+             f'metadata_overrides.csv applied to {len(used_overrides)} IDs'
+             + (f'; override IDs matching no saw: {sorted(set(overrides) - used_overrides)}' if set(overrides) - used_overrides else ''),
+             'several images of one saw:'] + report
     open(os.path.join(out, 'export_report.txt'), 'w').write('\n'.join(lines) + '\n')
-    print('\n'.join(lines[:2]))
+    print('\n'.join(lines[:3]))
     print('->', out)
 
 
