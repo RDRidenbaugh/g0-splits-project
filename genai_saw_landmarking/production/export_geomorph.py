@@ -14,6 +14,9 @@ mm: each image's own scale bar (image_table px_per_mm; cal_source says whether i
 QC: qc_pass is TRUE when landmark_images.py raised no flag (no_scale alone does not fail an image when a
 session median exists). After looking at the overlays, record decisions in qc_review.csv
 (key, decision = keep | drop, note); they override the flags.
+Fiji corrections: fiji_corrections.csv (read_roi_tiffs.py) replaces the CNN points of those images (source
+"<cnn source>+fiji") and clears their flags; a qc_review.csv decision still wins, so set a dropped image
+to keep once it is corrected.
 When a saw (same ID and side) has several images, the one kept is: passing QC, then out-of-fold over
 ensemble, then smallest model disagreement.
 Metadata: from the PRIME tables. metadata_overrides.csv (ID, species, host, treatment, colony, population, note)
@@ -48,6 +51,14 @@ def main():
     rp = os.path.join(HERE, 'qc_review.csv')
     if os.path.exists(rp):
         review = {r['key']: r['decision'].strip().lower() for r in csv.DictReader(open(rp))}
+    corr = {}  # points corrected in Fiji (read_roi_tiffs.py) replace the CNN's
+    cp = os.path.join(HERE, 'fiji_corrections.csv')
+    if os.path.exists(cp):
+        corr = {r['key']: r for r in csv.DictReader(open(cp))}
+    for r in rows:
+        if r['key'] in corr:
+            r.update({c: corr[r['key']][c] for c in r if c[0] in 'xy' and c[1:].isdigit()})
+            r['source'] += '+fiji'
     meta = {}
     for f, cohort in [('prime_g0_v6.csv', 'g0'), ('prime_splits_v8.csv', 'splits')]:
         for r in csv.DictReader(open(os.path.join(ROOT, 'analysis/data', f))):
@@ -77,7 +88,8 @@ def main():
     for r in rows:
         flags = [x for x in r['flags'].split(';') if x]
         hard = [x for x in flags if x != 'no_scale' or r['cal_source'] == 'none']
-        r['qc_pass'] = (review.get(r['key']) == 'keep') or (not hard and review.get(r['key']) != 'drop')
+        # a Fiji correction clears the flags; a qc_review.csv decision still wins
+        r['qc_pass'] = (review.get(r['key']) == 'keep') or ((not hard or r['key'] in corr) and review.get(r['key']) != 'drop')
         stem = os.path.splitext(os.path.basename(r['raw_image']))[0].upper()
         cid = by_coord.get(stem) or by_coord.get(re.sub(r'_[LR](_V\d+)?$', '', stem)) or norm_id(canon(r['id']))
         r['id_source'] = 'prime_coords' if stem in by_coord else 'name'
@@ -116,11 +128,16 @@ def main():
     npass = sum(k[13] == 'TRUE' for k in kept)
     lines = [f'{len(rows)} images -> {len(kept)} saws ({npass} pass QC, {len(kept) - npass} flagged)',
              f'saws without PRIME metadata ({len(missing)}): {missing}',
+             f'fiji_corrections.csv applied to {sum(r["key"] in corr for r in rows)} images'
+             + (f'; still dropped by qc_review.csv (set decision = keep to use them): {cd}'
+                if (cd := sorted(k for k in corr if review.get(k) == 'drop')) else '')
+             + (f'; keys not in the predictions: {sorted(set(corr) - {r["key"] for r in rows})}'
+                if set(corr) - {r['key'] for r in rows} else ''),
              f'metadata_overrides.csv applied to {len(used_overrides)} IDs'
              + (f'; override IDs matching no saw: {sorted(set(overrides) - used_overrides)}' if set(overrides) - used_overrides else ''),
              'several images of one saw:'] + report
     open(os.path.join(out, 'export_report.txt'), 'w').write('\n'.join(lines) + '\n')
-    print('\n'.join(lines[:3]))
+    print('\n'.join(lines[:4]))
     print('->', out)
 
 

@@ -86,7 +86,7 @@ Predictions made before 2026-09-27 used the NIS tag or the image width directly.
 | `no_bar` | No red scale bar was found: nominal calibration applied |
 | `in_sample` | The model that should have held this image out is missing |
 
-Flagged images get an overlay in `output/overlays/<View>/`. To override a flag, add a row to `qc_review.csv` with `view,key,decision,note`, where `decision` is `keep` or `drop`. Then rerun `export_geomorph.py`.
+Flagged images get an overlay in `output/overlays/<View>/`. To review them in Fiji, `python write_roi_tiffs.py` (flagged images; `--all` or `--keys ...` for others) writes `output/roi_tiffs/<View>/<key>.tif`: the raw image with the predicted points as one multi-point ROI in schema order, an overlay naming the anchors at their CNN positions, and the image's own calibration in µm. To correct: drag the wrong points with the Multi-point tool (never add or delete one), then File > Save. `python read_roi_tiffs.py` reads the saved TIFFs back, reports which points moved and by how many µm, and records them in `fiji_corrections.csv` (one row per view × key; a re-read replaces the row). `export_geomorph.py` then uses the corrected points (source `<cnn source>+fiji`) and passes those images, unless `qc_review.csv` says drop. To override a flag, add a row to `qc_review.csv` with `view,key,decision,note`, where `decision` is `keep` or `drop`. Then rerun `export_geomorph.py`.
 
 **Species** comes from `sample_sheet.csv` (the IDs in the old coordinate tables). If an ID is missing there, it comes from the cross type, or from the ID prefix for parents (LL/LX = Lecontei, NP/PX = Pinetum). `export_report.txt` lists any IDs it could not resolve.
 

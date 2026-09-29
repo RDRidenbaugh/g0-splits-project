@@ -16,6 +16,9 @@ when the rule cannot tell.
 
 QC: qc_pass is TRUE when landmark_images.py raised no flag. After looking at the overlays, record
 decisions in qc_review.csv (view, key, decision = keep | drop, note); they override the flags.
+Fiji corrections: fiji_corrections.csv (read_roi_tiffs.py) replaces the CNN points of those images
+(source "<cnn source>+fiji") and clears their flags; a qc_review.csv decision still wins, so set a
+dropped image to keep once it is corrected.
 When an individual has several images of one view, the one kept is: passing QC, then smallest
 model disagreement; the others are listed in the report.
 
@@ -62,6 +65,7 @@ def main():
     ap.add_argument("--out-dir", default=None, help="default: <pred-dir>/geomorph")
     ap.add_argument("--sample-sheet", default=str(HERE / "sample_sheet.csv"))
     ap.add_argument("--qc-review", default=str(HERE / "qc_review.csv"))
+    ap.add_argument("--corrections", default=str(HERE / "fiji_corrections.csv"))
     a = ap.parse_args()
     pred = Path(a.pred_dir)
     out = Path(a.out_dir or pred / "geomorph")
@@ -71,6 +75,9 @@ def main():
     review = {}
     if os.path.exists(a.qc_review):
         review = {(r["view"], r["key"]): r["decision"].strip().lower() for r in csv.DictReader(open(a.qc_review))}
+    corr = {}  # points corrected in Fiji (read_roi_tiffs.py) replace the CNN's
+    if os.path.exists(a.corrections):
+        corr = {(r["view"], r["key"]): r for r in csv.DictReader(open(a.corrections))}
 
     with open(out / "landmark_key_v14.csv", "w", newline="") as fh:
         w = csv.writer(fh)
@@ -87,9 +94,18 @@ def main():
         rows = list(csv.DictReader(open(f)))
         n = len(SCHEMA["views"][view]["points"])
         by_id = defaultdict(list)
+        ncorr, still_dropped = 0, []
         for r in rows:
+            c = corr.get((view, r["key"]))
+            if c:
+                r.update({f"{q}{i}": c[f"{q}{i}"] for i in range(1, n + 1) for q in "xy"})
+                r["source"] += "+fiji"
+                ncorr += 1
             decision = review.get((view, r["key"]))
-            r["qc_pass"] = decision == "keep" if decision in ("keep", "drop") else not r["flags"]
+            # a Fiji correction clears the flags; a qc_review.csv decision still wins
+            r["qc_pass"] = decision == "keep" if decision in ("keep", "drop") else (not r["flags"] or bool(c))
+            if c and decision == "drop":
+                still_dropped.append(r["key"])
             by_id[r["ID"]].append(r)
         kept, dups, nosp, noscale = [], [], [], []
         for ID, rs in by_id.items():
@@ -118,7 +134,11 @@ def main():
             w.writerows(sliders(view))
         npass = sum(r["qc_pass"] for r in kept)
         report.append(f"{view}: {len(rows)} images -> {len(kept)} individuals ({npass} pass QC, "
-                      f"{len(kept) - npass} flagged), {len(dups)} duplicate images dropped")
+                      f"{len(kept) - npass} flagged), {len(dups)} duplicate images dropped, "
+                      f"{ncorr} corrected in Fiji")
+        if still_dropped:
+            report.append(f"  corrected in Fiji but dropped by qc_review.csv (set decision = keep to use them): "
+                          f"{', '.join(sorted(still_dropped))}")
         if nosp:
             report.append(f"  no species (add to sample_sheet.csv): {', '.join(sorted(nosp))}")
         if noscale:
