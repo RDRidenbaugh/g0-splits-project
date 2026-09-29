@@ -34,3 +34,7 @@ genai_saw_landmarking/analysis/output/
 genai_saw_landmarking/autolabels/
 genai_saw_landmarking/*.pdf
 genai_saw_landmarking/ovipositor_morphometrics_protocol_v6.docx
+
+# Unpublished data and analyses (kept on disk, not versioned): PRIME metadata/phenotype tables, R scripts
+**/PRIME_*
+*.R

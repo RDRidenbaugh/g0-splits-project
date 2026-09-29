@@ -80,7 +80,7 @@ genai_lance_landmarking/production/runs/v14/{right,left,bottom}_f0 … _f4/   be
 
 If a model is missing, the script prints a warning and uses the models it has. Out-of-fold images whose model is missing are flagged `in_sample`.
 
-**R** (for the morphometrics step): `geomorph`, `dplyr`, `ggplot2`, `readxl`.
+**R** (for the morphometrics step): `geomorph`, `dplyr`, `ggplot2`, `readxl`. The R scripts (`saw_v12_morphometrics.R`, `lance_v14_morphometrics.R`) and the PRIME tables (`genai_saw_landmarking/data/PRIME_*.xlsx`) are unpublished and not in the GitHub repository; get them from the lab copy.
 
 **Fiji** (optional, for correcting points): any recent Fiji/ImageJ.
 
