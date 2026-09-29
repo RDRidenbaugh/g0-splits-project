@@ -21,7 +21,7 @@ genai_saw_landmarking/excluded/
 genai_saw_landmarking/*.tif
 genai_saw_landmarking/*.mp4
 genai_saw_landmarking/**/*:Zone.Identifier
-genai_saw_landmarking/review/overlays/
+genai_saw_landmarking/review/
 genai_saw_landmarking/production/images/
 genai_saw_landmarking/production/runs/
 genai_saw_landmarking/production/logs/*
