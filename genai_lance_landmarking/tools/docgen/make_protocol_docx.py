@@ -533,7 +533,8 @@ steps([
         "correct: the prediction is wrong and will be fixed by hand (next section)."]),
     "Write one row per reviewed image in genai_lance_landmarking/production/qc_review.csv with the columns "
     "view, key, decision, note (for example: Bottom, ll279xll297-1_b03, keep, Lecontei shape; points correct). "
-    "Use keep or drop; until a correction is imported, record an image to be corrected as drop.",
+    "Use keep or drop. An image you correct needs no row: a correction clears its flags. If it already has a drop "
+    "row, change the decision to keep, because a qc_review.csv decision always wins.",
     "Rerun python export_geomorph.py. Your decisions override the flags; unflagged images pass automatically.",
 ])
 para("Images whose file name has no _R, _L or _B (listed in output/unparsed_images.txt; in the first run "
@@ -541,31 +542,53 @@ para("Images whose file name has no _R, _L or _B (listed in output/unparsed_imag
      "all. Rename them with the correct face and run them as a small batch.")
 
 doc.add_heading("Correcting landmarks by hand in Fiji", level=2)
-para("Corrections are made in Fiji (ImageJ), on the raw TIFF, never on an overlay picture (overlays are cropped and "
-     "resized, so their pixel positions are not the image's). Choose the route by how badly the prediction failed.")
-para("Route A: move the wrong points (a few points off).", bold=True)
+para("Corrections are made in Fiji (ImageJ), on a full-size TIFF, never on an overlay picture (overlays are cropped "
+     "and resized, so their pixel positions are not the image's). Two scripts in genai_lance_landmarking/production/ "
+     "connect Fiji to the pipeline: write_roi_tiffs.py puts the CNN's points into a TIFF, and read_roi_tiffs.py reads "
+     "your corrected points back.")
+para("1. Make the TIFFs to correct.", bold=True)
 steps([
-    "Open the raw TIFF from genai_lance_landmarking/raw_images/.",
-    "Open Analyze > Tools > ROI Manager and load the image's point file (the CNN's points as one multi-point "
-    "selection, numbered in the order of landmark_key_v14.csv).",
-    "Select it in the ROI Manager. Turn on Edit > Options > Point Tool > Label points so each point shows its number.",
+    "From genai_lance_landmarking/production/, run: python write_roi_tiffs.py (every flagged image), or "
+    "python write_roi_tiffs.py --keys rx001-v5_r ll279xll297-1_b03 (chosen images), or --all.",
+    ("Each image is written to output/roi_tiffs/<View>/<key>.tif. It holds:", [
+        "the raw image, unchanged, calibrated in µm from its own scale bar;",
+        "the CNN's points as one multi-point selection, in the order of landmark_key_v14.csv;",
+        "an overlay naming each anchor (red) and computed point (blue) and marking the semilandmarks (yellow), all at "
+        "the CNN's positions. It stays put when you move a point, so you can see where the CNN had it. "
+        "Image > Overlay > Hide Overlay hides it;",
+        "Image > Show Info: the key, view, CNN source, flags, label gap and the point order."]),
+])
+para("2. Correct the points in Fiji.", bold=True)
+steps([
+    "Open the TIFF (drag it onto Fiji). The points appear as the active selection.",
+    "Turn on Edit > Options > Point Tool > Label points so each point shows its number.",
     "With the multi-point tool active, drag each wrong point to its correct position, following the definitions in "
     "this protocol. Never delete or add a point: the numbering must stay the same.",
-    "Semilandmarks (yellow in the overlay) only need to sit on the outline in the right order; their exact spacing "
-    "does not matter, because they slide during the Procrustes analysis.",
-    "Click Update in the ROI Manager, then More > Save, as SampleID_V_corr_ROI.zip.",
+    "Semilandmarks only need to sit on the outline in the right order; their exact spacing does not matter, because "
+    "they slide during the Procrustes analysis. The computed point (R18, L18, B14) is placed by its definition.",
+    "If the prediction is unusable (e.g. a reversed or cut-off specimen), move every point: the file still needs all "
+    "of them, in order.",
+    "Save with File > Save (keep the name and the TIFF format). Fiji stores the selection in the file. If you "
+    "clicked away and lost it, use Edit > Selection > Restore Selection before saving.",
 ])
-para("Route B: re-digitize the image (the prediction is unusable, e.g. a reversed or cut-off specimen).", bold=True)
+para("3. Read the corrections back.", bold=True)
 steps([
-    "Digitize the image from scratch following “Steps for every image” above: anchors as one multi-point selection, "
-    "then the curves as segmented lines, saved as SampleID_V_ROI.zip.",
-    "Convert it with tools/roi_to_landmarks.py as in “After digitizing”; the semilandmarks and the computed point are "
-    "placed by the software.",
+    "Run: python read_roi_tiffs.py (every TIFF under output/roi_tiffs/), or give it files or folders. "
+    "Add --dry-run to see the report without recording anything.",
+    ("For each file it prints:", [
+        "OK and the points you moved, with the largest move in µm;",
+        "same: nothing moved, so nothing is recorded;",
+        "FAIL: not read. Points were added or deleted, the image was cropped or resized, or no selection was saved. "
+        "Fix it (or run write_roi_tiffs.py again for that image) and rerun."]),
+    "Corrections are recorded in production/fiji_corrections.csv, one row per view and image. Reading an image again "
+    "replaces its row. The file sits alongside qc_review.csv, so rerunning landmark_images.py does not erase it.",
+    "Rerun python export_geomorph.py. Corrected images use your points, show source <CNN source>+fiji (e.g. "
+    "oof_f3+fiji), and pass QC unless qc_review.csv says drop. export_report.txt counts them and lists any that are "
+    "still dropped.",
 ])
-para("Status (September 2026): the two small steps that connect Fiji to the pipeline are not built yet: writing each "
-     "flagged image's CNN points as a Fiji point file for Route A, and importing corrected points (from either route) "
-     "into export_geomorph.py so they replace the CNN's points (marked source = manual). Until they are, record "
-     "images that need correction as drop in qc_review.csv.", italic=True)
+para("Re-digitizing from scratch (anchors plus traced curves, converted with tools/roi_to_landmarks.py as in "
+     "“After digitizing”) gives a landmark table, but export_geomorph.py does not read it yet. For the production "
+     "tables, use the steps above.", italic=True)
 
 doc.add_heading("Scale calibration", level=2)
 para("The images come from two camera setups, which is why they have two sizes:")
