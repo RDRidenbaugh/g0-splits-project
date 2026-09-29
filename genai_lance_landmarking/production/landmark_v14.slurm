@@ -36,7 +36,7 @@ if [[ ! -f "$PROD/manifest_v14.csv" ]]; then
     exit 1
 fi
 # training/model code is shared with the old protocol; data, runs and logs stay in $PROD
-MODEL_DIR="$(cd "$PROD/../../lance_landmarking/cnn" && pwd)"
+MODEL_DIR="$(cd "$PROD/../../cnn" && pwd)"
 REPO_ROOT="$(cd "$PROD/../.." && pwd)"
 ENV_DIR="$REPO_ROOT/.condaenv"           # created by setup_env.sh
 source activate "$ENV_DIR"
@@ -53,7 +53,7 @@ PYTHON="$ENV_DIR/bin/python3"
 
 echo "python: $PYTHON  ($($PYTHON --version 2>&1))"
 if ! "$PYTHON" -c "import torch, torchvision, numpy, PIL, tifffile, imagecodecs, matplotlib"; then
-    echo "ERROR: environment at $REPO_ROOT/.condaenv is missing packages -- rerun setup_env.sh or: pip install -r requirements.txt" >&2
+    echo "ERROR: environment at $REPO_ROOT/.condaenv is missing packages -- rerun cnn/setup_env.sh or: pip install -r cnn/requirements.txt" >&2
     exit 1
 fi
 

@@ -7,7 +7,7 @@ same individuals, same landmark order, same (original-image) pixel units.
 Only the test split is exported (never seen in training), matching train.py's
 default split (val_frac=0.15, test_frac=0.15, seed=42) unless overridden.
 
-Usage (from lance_landmarking/cnn/, with the project venv active):
+Usage (from cnn/, with the project venv active):
     python3 export_predictions.py --angle Right --checkpoint runs/21ix26_runs/Right_36764579/best.pt
     python3 export_predictions.py --angle Left   --checkpoint runs/21ix26_runs/Left_36764579/best.pt
     python3 export_predictions.py --angle Bottom --checkpoint runs/21ix26_runs/Bottom_36764579/best.pt
@@ -23,7 +23,6 @@ from pathlib import Path
 import torch
 from torch.utils.data import DataLoader
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "tools"))
 from landmarks_io import read_image_meta  # noqa: E402
 
 from constants import EXPECTED_N, HEATMAP_STRIDE, MANIFEST_PATH

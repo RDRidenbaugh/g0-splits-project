@@ -8,9 +8,9 @@ There are 15 CNNs: 3 views × 5 cross-fitting folds. They are trained on the v1.
 
 Folds are assigned by family and balanced within each cross type, so siblings never sit on both sides of a train/test split.
 
-Everything for v1.4 lives in this folder: training data (`manifest_v14.csv`, `folds_v14.json`), SLURM scripts, `runs/`, `logs/` and `output/`. It reads the images from `genai_lance_landmarking/raw_images/` and `landmarked_images/`, so nothing is written to `lance_landmarking/`. Only the network code (`lance_landmarking/cnn/train.py`, `evaluate.py`, `model.py`, `dataset.py`) is shared, and it is called by path.
+Everything for v1.4 lives in this folder: training data (`manifest_v14.csv`, `folds_v14.json`), SLURM scripts, `runs/`, `logs/` and `output/`. It reads the images from `genai_lance_landmarking/raw_images/` and `landmarked_images/`, The network code (`cnn/train.py`, `evaluate.py`, `model.py`, `dataset.py` at the repo root) is shared with the saw pipeline and is called by path.
 
-Training runs on MCC, with the same environment as the earlier runs (`lance_landmarking/cnn/setup_env.sh`, `.condaenv` at the repo root on scratch).
+Training runs on MCC, with the environment built by `cnn/setup_env.sh` (`.condaenv` at the repo root on scratch).
 
 1. **Locally, only if the labels change:**
    ```
@@ -19,8 +19,8 @@ Training runs on MCC, with the same environment as the earlier runs (`lance_land
    It writes `manifest_v14.csv` and `folds_v14.json` here. Both are committed, so MCC gets them with the code.
 2. **On MCC, in the repo on scratch:**
    - Update the repo: `git checkout main && git pull`.
-   - Make sure `genai_lance_landmarking/raw_images/` is there (`raw_images/lbx/…`, the same 968 files as `lance_landmarking/raw_images/`). Training reads only the raw images; the manifest paths are relative to this folder. To avoid storing 9.5 GB twice on scratch, a symlink works: `ln -s ../lance_landmarking/raw_images genai_lance_landmarking/raw_images`.
-   - Run `setup_env.sh` again only if `.condaenv` is missing.
+   - Make sure `genai_lance_landmarking/raw_images/` is there (`raw_images/lbx/…`, 968 files, 9.5 GB; not in git). Training reads only the raw images; the manifest paths are relative to this folder.
+   - Run `cnn/setup_env.sh` again only if `.condaenv` is missing.
 3. **Submit, from `genai_lance_landmarking/production/`:**
    ```
    mkdir -p logs

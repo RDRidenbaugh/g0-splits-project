@@ -1,13 +1,14 @@
 """Two training manifests over the SAME images for a fair old-vs-new CNN comparison.
 
-Rows = lance_landmarking/cnn/manifest.csv rows whose new-protocol automatic label
+Rows = production/manifest_v2_images.csv rows (the old v2 manifest) whose new-protocol automatic label
 passed QC (autolabels/qc_final.csv), in the original manifest order, so
 splits.split_samples() gives identical train/val/test splits for both.
 
-  lance_landmarking/cnn/manifest_oldproto_qc.csv  old (v2) points, click-order errors fixed
-  lance_landmarking/cnn/manifest_newproto.csv     new (v1.3) points: Right 42, Left 40, Bottom 38
+  $LEGACY_LANCE/cnn/manifest_oldproto_qc.csv  old (v2) points, click-order errors fixed
+  $LEGACY_LANCE/cnn/manifest_newproto.csv     new (v1.3) points: Right 42, Left 40, Bottom 38
 
-Image paths are relative to the manifests' own directory (lance_landmarking/cnn/), as in manifest.csv.
+Written next to the old runs ($LEGACY_LANCE, default ~/g0-splits-archive/lance_landmarking; not in git).
+Image paths stay "../raw_images/...", relative to each manifest's own directory.
 """
 import csv, json, os, sys
 import numpy as np
@@ -16,7 +17,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from autolabel import fix_order, point_order  # noqa: E402
 
-LANCE = "/home/labradorite/g0-splits-project/lance_landmarking/cnn/"  # the manifests live here; their image paths are relative to it
+LANCE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "production", "")  # manifest_v2_images.csv lives here; its image paths are relative to it
+OUT = os.path.join(os.environ.get("LEGACY_LANCE", os.path.expanduser("~/g0-splits-archive/lance_landmarking")), "cnn")  # comparison manifests go next to the old runs (not in git)
 AL = os.path.join(HERE, "..", "autolabels")
 
 
@@ -37,7 +39,7 @@ def main():
             f = os.path.join(AL, f"labels_{v}.csv")
         for r in csv.DictReader(open(f)):
             labels[(v, r["key"])] = [[round(float(r[f"{i}_x"]), 2), round(float(r[f"{i}_y"]), 2)] for i in ids]
-    rows = list(csv.DictReader(open(LANCE + "manifest.csv")))
+    rows = list(csv.DictReader(open(LANCE + "manifest_v2_images.csv")))
     cols = list(rows[0].keys())
     old_out, new_out = [], []
     for r in rows:
@@ -50,7 +52,7 @@ def main():
         old_out.append(o)
         new_out.append(n)
     for name, out in ((a.old_out, old_out), (a.new_out, new_out)):
-        with open(LANCE + name, "w", newline="") as fh:
+        with open(os.path.join(OUT, name), "w", newline="") as fh:
             w = csv.DictWriter(fh, cols)
             w.writeheader()
             w.writerows(out)

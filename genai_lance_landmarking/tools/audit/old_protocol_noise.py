@@ -1,6 +1,6 @@
 import numpy as np, glob, json, os, collections
-base='/home/labradorite/g0-splits-project/genai_lance_landmarking/landmarked_images'
-runs='/home/labradorite/g0-splits-project/lance_landmarking/cnn/runs/21ix26_runs'
+base=os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','..','landmarked_images')
+runs=os.path.join(os.path.join(os.environ.get("LEGACY_LANCE", os.path.expanduser("~/g0-splits-archive/lance_landmarking")), "cnn"),'runs','21ix26_runs')
 N={'Bottom':17,'Left':32,'Right':36}
 def gpa(X):
     X=X-X.mean(1,keepdims=True); X=X/np.linalg.norm(X,axis=(1,2),keepdims=True)

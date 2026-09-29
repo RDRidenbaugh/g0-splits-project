@@ -295,7 +295,7 @@ steps([
 
 doc.add_heading("Steps for every image", level=2)
 steps([
-    "Open the **raw** TIFF (from lance_landmarking/raw_images), never a previously landmarked _MARK file.",
+    "Open the **raw** TIFF (from genai_lance_landmarking/raw_images), never a previously landmarked _MARK file.",
     ("**Calibrate from the scale bar.** Use the Straight Line tool to draw a line exactly along the scale bar, end to "
      "end. Analyze › Set Scale: Known distance = the bar's length (1 mm), Unit = mm, **Global unticked**. Write the "
      "“Distance in pixels” into the px_per_mm column of the sheet.",

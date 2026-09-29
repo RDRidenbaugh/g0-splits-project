@@ -18,13 +18,13 @@ from skimage.filters import threshold_otsu, gaussian
 from skimage.measure import find_contours
 from skimage.morphology import disk, opening, closing
 
-LANCE = "/home/labradorite/g0-splits-project/lance_landmarking/cnn/"  # the manifests live here; their image paths are relative to it
+LANCE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "production", "")  # manifest_v2_images.csv lives here; its image paths are relative to it
 sys.path.insert(0, os.path.dirname(__file__))
 from scheme import SCHEME  # noqa: E402
 
 
 def load(key, angle):
-    for r in csv.DictReader(open(LANCE + "manifest.csv")):
+    for r in csv.DictReader(open(LANCE + "manifest_v2_images.csv")):
         if r["key"].rsplit("_", 1)[0] == key and r["angle"] == angle:
             img = tifffile.imread(LANCE + r["raw_image"])[..., :3]
             return img, np.array(json.loads(r["landmarks_px_json"]))

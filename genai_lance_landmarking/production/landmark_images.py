@@ -47,7 +47,7 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parent.parent
-CNN = REPO / "lance_landmarking" / "cnn"  # shared training/model code only
+CNN = REPO / "cnn"  # shared training/model code only
 sys.path.insert(0, str(CNN))
 import torch  # noqa: E402
 from torch.utils.data import DataLoader, Dataset  # noqa: E402

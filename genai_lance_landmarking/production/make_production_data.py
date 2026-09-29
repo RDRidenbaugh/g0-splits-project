@@ -2,6 +2,7 @@
 
 Writes, in this folder (genai_lance_landmarking/production/), with image paths relative to it
 (../raw_images, ../landmarked_images: the genai copies of the images):
+  (reads manifest_v2_images.csv here: the image list of the original v2 human digitization)
   manifest_v14.csv   v1.4 points (Right 42, Left 40, Bottom 38) for every image whose
                      automatic label passed QC (autolabels/qc_final.csv). Right/Left use the
                      v1.4 distal dorsal start (labels_<View>_distal.csv).
@@ -17,7 +18,7 @@ from collections import defaultdict
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, "..")
-CNN = os.path.abspath(os.path.join(ROOT, "..", "lance_landmarking", "cnn"))
+CNN = os.path.abspath(os.path.join(ROOT, "..", "cnn"))
 AL = os.path.join(ROOT, "autolabels")
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 sys.path.insert(0, CNN)
@@ -41,8 +42,8 @@ def main():
         for r in csv.DictReader(open(os.path.join(AL, f"labels_{v}{SUFFIX[v]}.csv"))):
             labels[(v, r["key"])] = [[round(float(r[f"{i}_x"]), 2), round(float(r[f"{i}_y"]), 2)] for i in ids]
 
-    rows = list(csv.DictReader(open(os.path.join(CNN, "manifest.csv"))))
-    # re-point the image paths from lance_landmarking/cnn/ to this folder: "../raw_images/<group>/..."
+    rows = list(csv.DictReader(open(os.path.join(HERE, "manifest_v2_images.csv"))))
+    # image list = the old v2 manifest (formerly lance_landmarking/cnn/manifest.csv); "../raw_images/<group>/..."
     # already resolves to genai_lance_landmarking/raw_images; the marked images are ../landmarked_images
     for r in rows:
         for c in ("marked_tiff", "txt"):

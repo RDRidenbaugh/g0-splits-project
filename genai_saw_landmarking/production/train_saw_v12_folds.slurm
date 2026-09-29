@@ -6,8 +6,8 @@
 # Errors in eval_test.json are in px (mm come from each image's scale bar at landmarking;
 # all saw sessions are 2140-2160 px/mm, so px / 2145 is within 0.5%).
 #
-# Setup is the same as lance_landmarking/cnn/train_lance_landmarks.slurm (scratch space,
-# setup_env.sh -> .condaenv at the repo root, account line); run `mkdir -p logs` here first.
+# Setup (once): repo on scratch space, cnn/setup_env.sh -> .condaenv at the repo root,
+# the #SBATCH --account line below; run `mkdir -p logs` here first.
 # Images come from genai_saw_landmarking/production/images/ (made by prep_images.py:
 # mirrored apex-left, colour-normalized; copy that folder to MCC, ~3.3 GB). The manifest
 # paths are relative to this folder.
@@ -43,7 +43,7 @@ if [[ ! -f "$PROD/manifest_saw_v12.csv" ]]; then
     exit 1
 fi
 # training/model code is shared with the old protocol; data, runs and logs stay in $PROD
-MODEL_DIR="$(cd "$PROD/../../lance_landmarking/cnn" && pwd)"
+MODEL_DIR="$(cd "$PROD/../../cnn" && pwd)"
 REPO_ROOT="$(cd "$PROD/../.." && pwd)"
 ENV_DIR="$REPO_ROOT/.condaenv"           # created by setup_env.sh
 source activate "$ENV_DIR"
@@ -60,7 +60,7 @@ PYTHON="$ENV_DIR/bin/python3"
 
 echo "python: $PYTHON  ($($PYTHON --version 2>&1))"
 if ! "$PYTHON" -c "import torch, torchvision, numpy, PIL, tifffile, imagecodecs, matplotlib"; then
-    echo "ERROR: environment at $REPO_ROOT/.condaenv is missing packages -- rerun setup_env.sh or: pip install -r requirements.txt" >&2
+    echo "ERROR: environment at $REPO_ROOT/.condaenv is missing packages -- rerun cnn/setup_env.sh or: pip install -r cnn/requirements.txt" >&2
     exit 1
 fi
 

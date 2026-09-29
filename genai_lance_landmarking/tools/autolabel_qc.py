@@ -39,7 +39,7 @@ sys.path.insert(0, HERE)
 from autolabel import fix_order  # noqa: E402
 
 AL = os.path.join(HERE, "..", "autolabels")
-LANCE = "/home/labradorite/g0-splits-project/lance_landmarking/cnn/"  # the manifests live here; their image paths are relative to it
+LANCE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "production", "")  # manifest_v2_images.csv lives here; its image paths are relative to it
 SCHEMA = json.load(open(os.path.join(HERE, "..", "landmark_schema.json")))
 # old 30 (Right) / 26 (Left) sit proximal to where the new dorsal curve starts (R18/L18), so they are not used
 DORSAL_OLD = {"Right": range(31, 37), "Left": range(27, 33)}
@@ -61,7 +61,7 @@ def main():
     ap.add_argument("--len-mad", type=float, default=5.0)
     ap.add_argument("--height-mad", type=float, default=3.0)
     a = ap.parse_args()
-    man = {(r["angle"], r["key"]): r for r in csv.DictReader(open(LANCE + "manifest.csv"))}
+    man = {(r["angle"], r["key"]): r for r in csv.DictReader(open(LANCE + "manifest_v2_images.csv"))}
     rows = list(csv.DictReader(open(os.path.join(AL, "qc.csv"))))
     labels = {}
     for v in ("Right", "Left", "Bottom"):

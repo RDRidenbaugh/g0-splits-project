@@ -8,16 +8,16 @@ renumbering, so it refers to the notch as B12 and the shoulders as B13/B14).
 
 usage: python bottom_shoulder_stability.py out.json
 """
-import sys, csv, json, random, numpy as np, tifffile
-sys.path.insert(0,'/home/labradorite/g0-splits-project/genai_lance_landmarking/tools')
+import os, sys, csv, json, random, numpy as np, tifffile
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 from scipy import ndimage as ndi
 from skimage.filters import threshold_otsu, gaussian
 from skimage.measure import find_contours
 from skimage.morphology import disk, opening, closing
 from scheme import _basal_notch, _turning, _arc, _shoulder
 from scipy.spatial import ConvexHull
-L='/home/labradorite/g0-splits-project/lance_landmarking/'
-rows=[r for r in csv.DictReader(open(L+'manifest.csv')) if r['angle']=='Bottom' and not r['flags']]
+L=os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "production", "")
+rows=[r for r in csv.DictReader(open(L+'manifest_v2_images.csv')) if r['angle']=='Bottom' and not r['flags']]
 random.seed(7)
 by={}
 for r in rows: by.setdefault(r['group'],[]).append(r)

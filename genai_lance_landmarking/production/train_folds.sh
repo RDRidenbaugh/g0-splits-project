@@ -3,14 +3,14 @@
 # labels, each followed by its held-out-fold evaluation. Same settings as the protocol comparison
 # (DSNT, cosine decay, 40 epochs, batch 8). Finished models are skipped, so rerunning resumes.
 #   genai_lance_landmarking/production/runs/v14/<view>_f<k>/best.pt, split_keys.json, eval_test.json, run.log
-# The training code is shared with the old protocol (lance_landmarking/cnn/*.py); data, runs and logs stay here.
+# The training code is shared with the old protocol (cnn/*.py at the repo root); data, runs and logs stay here.
 # usage: bash train_folds.sh [parallel_jobs=3] [threads_per_job=3] [epochs=40]
 # Local fallback; production training runs on MCC: train_v14_folds.slurm (same outputs).
 set -u
 P=${1:-3}; T=${2:-3}; E=${3:-40}
 PROD=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-MODEL=$PROD/../../lance_landmarking/cnn
-PY=/home/labradorite/g0-splits-project/.venv/bin/python
+MODEL=$PROD/../../cnn
+PY=$PROD/../../.venv/bin/python
 OUT=$PROD/runs/v14
 mkdir -p "$OUT"
 job() {

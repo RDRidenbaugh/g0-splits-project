@@ -1,6 +1,6 @@
 # Saw protocol v1.2: production CNN landmarking
 
-Same design as the lance v1.4 production pipeline (`../../genai_lance_landmarking/production/`), with the same network code (`../../lance_landmarking/cnn/`, view name `Saw`, 52 points).
+Same design as the lance v1.4 production pipeline (`../../genai_lance_landmarking/production/`), with the same network code (`../../cnn/`, view name `Saw`, 52 points).
 
 **Five cross-fitted models.** Folds are assigned by **colony**, so siblings never sit on both sides of a train/test split. The folds are balanced within cohort × species (g0/splits × lecontei/pinetum). An image whose label trained the models gets its held-out fold's model (out-of-fold); every other image gets the 5-model ensemble. No image is predicted by a model that saw it.
 

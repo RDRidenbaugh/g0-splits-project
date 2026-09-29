@@ -4,7 +4,7 @@ Reads image_table.csv (prep_images.py) and ../autolabels/labels_v12.csv + qc_v12
   manifest_saw_v12.csv  one row per prepared image with a usable v1.2 label: it passed the automatic QC
                         or was marked "ok" in ../review/label_review.csv, and was not marked "drop"
                         (landmark_source autolabel_v1.2 / autolabel_v1.2_reviewed), in the layout the
-                        shared CNN code (lance_landmarking/cnn) reads: angle = "Saw", raw_image =
+                        shared CNN code (cnn/ at the repo root) reads: angle = "Saw", raw_image =
                         images/<key>.tif (mirrored apex-left, colour-normalized; same pixel grid as
                         the marked TIFF the label was made on), landmarks_px_json = the 52 points.
                         marked_tiff is left empty on purpose: evaluate.py would take mm from the
@@ -27,7 +27,7 @@ from collections import defaultdict
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
-CNN = os.path.abspath(os.path.join(ROOT, '..', 'lance_landmarking', 'cnn'))
+CNN = os.path.abspath(os.path.join(ROOT, '..', 'cnn'))
 sys.path.insert(0, os.path.join(ROOT, 'tools'))
 sys.path.insert(0, CNN)
 import scheme  # noqa: E402

@@ -98,7 +98,7 @@ def main():
     ap.add_argument("--limit", type=int)
     a = ap.parse_args()
     os.makedirs(OUT, exist_ok=True)
-    rows = [r for r in csv.DictReader(open(dp.LANCE + "manifest.csv"))
+    rows = [r for r in csv.DictReader(open(dp.LANCE + "manifest_v2_images.csv"))
             if r["angle"] in a.views and r["landmarks_px_json"] and r["n_found"] == r["n_expected"]
             and r["raw_image"] and os.path.exists(dp.LANCE + r["raw_image"])]
     if a.limit:

@@ -1,21 +1,23 @@
 #!/usr/bin/env bash
 # Baseline CNN for the old-vs-new protocol comparison, run locally.
 # Trains one model per (protocol, view) on the SAME images and splits
-# (lance_landmarking/cnn/manifest_{oldproto_qc,newproto}.csv), with the settings of
+# ($LEGACY_LANCE/cnn/manifest_{oldproto_qc,newproto}.csv), with the settings of
 # the 21ix26 MCC runs (DSNT loss, cosine decay, 40 epochs, batch 8), then
 # evaluates on the test split and exports manual + predicted test landmarks.
 # usage: bash run_protocol_comparison.sh [parallel_jobs=2] [threads_per_job=4]
 set -u
 P=${1:-2}; T=${2:-4}
-MODEL=/home/labradorite/g0-splits-project/lance_landmarking/cnn
-PY=/home/labradorite/g0-splits-project/.venv/bin/python
-OUT=$MODEL/runs/protocol_comparison
-DATA=/home/labradorite/g0-splits-project/genai_lance_landmarking/analysis/data/cnn
+REPO=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+LEGACY=${LEGACY_LANCE:-$HOME/g0-splits-archive/lance_landmarking}/cnn  # old-protocol manifests + runs (not in git)
+MODEL=$REPO/cnn
+PY=$REPO/.venv/bin/python
+OUT=$LEGACY/runs/protocol_comparison
+DATA=$REPO/genai_lance_landmarking/analysis/data/cnn
 mkdir -p "$OUT" "$DATA"
 job() {
   proto=$1; view=$2
-  man=$MODEL/manifest_${proto}.csv; [ "$proto" = old ] && man=$MODEL/manifest_oldproto_qc.csv
-  [ "$proto" = new ] && man=$MODEL/manifest_newproto.csv
+  man=$LEGACY/manifest_${proto}.csv; [ "$proto" = old ] && man=$LEGACY/manifest_oldproto_qc.csv
+  [ "$proto" = new ] && man=$LEGACY/manifest_newproto.csv
   d=$OUT/${proto}_${view,,}
   mkdir -p "$d"
   cd "$MODEL" || exit 1
@@ -31,7 +33,7 @@ job() {
   } > "$d/run.log" 2>&1
   tail -1 "$d/run.log"
 }
-export -f job; export MODEL PY OUT DATA T
+export -f job; export MODEL LEGACY PY OUT DATA T
 printf "%s\n" "new Right" "old Right" "new Left" "old Left" "new Bottom" "old Bottom" |
   xargs -P "$P" -L 1 bash -c 'job $0 $1'
 echo ALL DONE

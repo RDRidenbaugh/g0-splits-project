@@ -1,6 +1,6 @@
 """Train one HeatmapNet for one view (Bottom/Left/Right).
 
-Usage (from lance_landmarking/cnn/, with the repo venv active):
+Usage (from cnn/, with the repo venv active; production runs pass --manifest/--folds):
     python3 train.py --angle Bottom --epochs 40
 """
 from __future__ import annotations

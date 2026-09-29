@@ -1,5 +1,5 @@
-import numpy as np, glob
-exec(open('/home/labradorite/g0-splits-project/genai_lance_landmarking/tools/audit/old_protocol_noise.py').read().split('for v,n in N.items():')[0])
+import numpy as np, glob, os
+exec(open(os.path.join(os.path.dirname(os.path.abspath(__file__)),'old_protocol_noise.py')).read().split('for v,n in N.items():')[0])
 tests={'Right':[(2,1,3),(1,30,2),(3,2,4),(6,5,7),(8,7,9),(13,12,28),(29,1,14)],
        'Left':[(2,1,3),(1,26,2),(3,2,4),(6,5,7),(8,7,9),(10,9,11),(13,12,32)],
        'Bottom':[(9,'axis',None),(6,7,12),(1,2,None),(13,14,None),(3,2,4),(15,14,16)]}

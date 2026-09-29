@@ -32,7 +32,7 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-CNN = ROOT.parent / "lance_landmarking" / "cnn"  # shared network code
+CNN = ROOT.parent / "cnn"  # shared network code
 sys.path.insert(0, str(CNN))
 sys.path.insert(0, str(ROOT / "tools"))
 import torch  # noqa: E402
