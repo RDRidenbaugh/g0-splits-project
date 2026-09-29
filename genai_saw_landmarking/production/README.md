@@ -19,7 +19,7 @@ Same design as the lance v1.4 production pipeline (`../../genai_lance_landmarkin
 6. **Optional, review in Fiji: `python write_roi_tiffs.py`** (flagged images; `--all` or `--keys ...` for others) writes `output/roi_tiffs/<key>.tif`. Each file holds the raw image in the protocol frame (`--prepared` gives the colour-normalized CNN input instead), the 52 predicted points as one multi-point ROI in `scheme.point_order()` order, an overlay naming the anchors at their CNN positions, and the image's own calibration in µm.
    To correct: drag the wrong points with the Multi-point tool (never add or delete one), then File > Save. **`python read_roi_tiffs.py`** reads the saved TIFFs back, reports which points moved and by how many µm, and records them in `fiji_corrections.csv` (one row per key; a re-read replaces the row). `export_geomorph.py` then uses the corrected points (source `<cnn source>+fiji`) and passes those images, unless `qc_review.csv` says drop. For an image you dropped and have now corrected, set its decision to keep.
 
-**Validation (2026-09-27; `../analysis/prep_cnn_validation.py`, `cnn_validation.R`, `cnn_validation_modules.R`, `cnn_digitizer_host.R`).**
+**Validation (2026-09-27; analysis scripts kept outside this repository).**
 - **Held-out error:** mean about 6 µm per point, median about 4.7 µm. The apex, V1 and D2 are as good as a second human digitizer; the crowded distal points (R6–R7, D6–D7, V5–V7) are the weakest.
 - **Against two people:** on the 14 images digitized by both BH and GK, the CNN is a median 5.0 / 5.4 µm from each, versus 2.0 µm between the two digitizers.
 - **Repeatability,** label vs CNN on 380 images: shape R = 0.87, log centroid size R = 0.996. Measurement error is 6.6% of shape variance.
